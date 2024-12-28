@@ -2,15 +2,23 @@ package com.example.backend.models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String email;
     private String nick;
     private String login;
     private String password;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Shelf> shelves;
 
     public User() {
 
@@ -23,8 +31,14 @@ public class User {
         this.password = password;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public User(String email, String nick, String login, String password, List<Shelf> shelves) {
+        this.email = email;
+        this.nick = nick;
+        this.login = login;
+        this.password = password;
+        this.shelves = shelves;
+    }
+
     public long getId() {
         return id;
     }
@@ -69,6 +83,14 @@ public class User {
         this.password = password;
     }
 
+    public List<Shelf> getShelves() {
+        return shelves;
+    }
+
+    public void setShelves(List<Shelf> shelves) {
+        this.shelves = shelves;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -77,6 +99,7 @@ public class User {
                 ", nick='" + nick + '\'' +
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
+                ", shelves=" + shelves +
                 '}';
     }
 }

@@ -1,9 +1,11 @@
-services:
+services: 
   spring:
     build: ./backend
     container_name: olib-spring
     ports:
       - "8080:8080"
+    depends_on:
+      - olib-database
     develop:
       watch:
         - action: rebuild
@@ -13,8 +15,8 @@ services:
             - .idea
             - .mvn
             - target
-            
-  database:
+
+  olib-database:
     image: 'postgres:latest'
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}

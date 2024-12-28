@@ -1,9 +1,8 @@
 package com.example.backend.controllers;
 
+import com.example.backend.repositories.UserRepository;
 import com.example.backend.models.User;
-import com.example.backend.models.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +13,14 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    public UserController() {
+
+    }
+
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/users")
     public List<User> getAllUsers() {
