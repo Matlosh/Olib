@@ -2,26 +2,19 @@ package com.example.backend.models;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
-
 @Entity
-@Table(name = "shelves")
-public class Shelf {
+@Table(name = "libraries")
+public class Library {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToMany(mappedBy = "bookShelves")
-    private Set<Book> books;
-
-    private String name;
-
-    public Shelf(User user) {
+    public Library(User user) {
         this.user = user;
     }
 
@@ -41,21 +34,11 @@ public class Shelf {
         this.user = user;
     }
 
-    @Column(name = "name", nullable = false)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public String toString() {
-        return "Shelf{" +
+        return "Library{" +
                 "id=" + id +
                 ", user=" + user +
-                ", name='" + name + '\'' +
                 '}';
     }
 }

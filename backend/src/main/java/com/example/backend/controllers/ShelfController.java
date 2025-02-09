@@ -2,36 +2,30 @@ package com.example.backend.controllers;
 
 import com.example.backend.models.Shelf;
 import com.example.backend.repositories.ShelfRepository;
+import com.example.backend.services.ShelfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 public class ShelfController {
 
-    @Autowired
-    private ShelfRepository shelfRepository;
+    private final ShelfService shelfService;
 
-    public ShelfController() {
 
+    public ShelfController(ShelfService shelfService) {
+        this.shelfService = shelfService;
     }
 
-    public ShelfController(ShelfRepository shelfRepository) {
-        this.shelfRepository = shelfRepository;
-    }
-
-    @GetMapping("/shelves")
-    public List<Shelf> getAllShelves() {
-        return shelfRepository.findAll();
+    @GetMapping("/users/{id}/shelves")
+    public List<Shelf> getAllShelves(@PathVariable long id) {
+        return shelfService.getUserShelves(id);
     }
 
     @PostMapping("/shelves")
     public Shelf createShelf(@Validated @RequestBody Shelf shelf) {
-        return shelfRepository.save(shelf);
+        return shelfService.createShelf(shelf);
     }
 }
