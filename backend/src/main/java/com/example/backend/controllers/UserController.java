@@ -1,7 +1,10 @@
 package com.example.backend.controllers;
 
+import com.example.backend.forms.LoginForm;
+import com.example.backend.forms.RegisterForm;
 import com.example.backend.repositories.UserRepository;
 import com.example.backend.models.User;
+import com.example.backend.responses.BaseResponse;
 import com.example.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -23,8 +26,17 @@ public class UserController {
         return userService.getAll();
     }
 
-    @PostMapping("/users")
-    public User createUser(@Validated @RequestBody User user) {
-        return userService.createUser(user);
+    @PostMapping("/register")
+    @ResponseBody
+    public BaseResponse registerUser(@Validated @RequestBody RegisterForm form) {
+        userService.createUser(form);
+        return new BaseResponse(true, "New user account was created.");
+    }
+
+    @PostMapping("/login")
+    @ResponseBody
+    public BaseResponse loginUser(@Validated @RequestBody LoginForm form) {
+
+        return new BaseResponse(true, "Logged in.");
     }
 }
