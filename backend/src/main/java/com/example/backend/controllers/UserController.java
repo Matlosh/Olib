@@ -1,12 +1,12 @@
 package com.example.backend.controllers;
 
+import com.example.backend.data.UserData;
 import com.example.backend.forms.LoginForm;
 import com.example.backend.forms.RegisterForm;
-import com.example.backend.repositories.UserRepository;
 import com.example.backend.models.User;
 import com.example.backend.responses.BaseResponse;
 import com.example.backend.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,21 +22,30 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(HttpServletRequest request) {
         return userService.getAll();
     }
 
-    @PostMapping("/register")
-    @ResponseBody
+    @PostMapping("/user/register")
     public BaseResponse registerUser(@Validated @RequestBody RegisterForm form) {
-        userService.createUser(form);
+        userService.registerUser(form);
         return new BaseResponse(true, "New user account was created.");
     }
 
-    @PostMapping("/login")
-    @ResponseBody
-    public BaseResponse loginUser(@Validated @RequestBody LoginForm form) {
-
+    @PostMapping("/user/login")
+    public BaseResponse loginUser(@Validated @RequestBody LoginForm form, HttpServletRequest request) {
+        userService.loginUser(form, request);
         return new BaseResponse(true, "Logged in.");
+    }
+
+    @PostMapping("/user/logout")
+    public BaseResponse logoutUser(HttpServletRequest request) {
+        userService.logoutUser(request);
+        return new BaseResponse(true, "Logged out.");
+    }
+
+    @GetMapping("/user")
+    public UserData getMe(HttpServletRequest request) {
+        return userService.getMe(request);
     }
 }

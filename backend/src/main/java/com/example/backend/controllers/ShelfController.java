@@ -14,7 +14,7 @@ public class ShelfController {
 
     private final ShelfService shelfService;
 
-
+    @Autowired
     public ShelfController(ShelfService shelfService) {
         this.shelfService = shelfService;
     }
