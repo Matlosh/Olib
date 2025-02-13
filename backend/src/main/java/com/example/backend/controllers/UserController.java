@@ -46,6 +46,7 @@ public class UserController {
 
     @GetMapping("/user")
     public UserData getMe(HttpServletRequest request) {
+        userService.authenticate(request);
         return userService.getMe(request);
     }
 }

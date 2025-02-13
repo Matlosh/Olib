@@ -36,7 +36,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    private void authenticate(HttpServletRequest request) {
+    public void authenticate(HttpServletRequest request) {
         boolean authenticated;
         Object email = request.getSession().getAttribute("email");
 
@@ -104,8 +104,6 @@ public class UserService {
     }
 
     public UserData getMe(HttpServletRequest request) {
-        authenticate(request);
-
         Object email = request.getSession().getAttribute("email");
         Optional<User> user = userRepository.findOneByEmail(String.valueOf(email));
 
@@ -117,5 +115,16 @@ public class UserService {
         userData.setNick(user.get().getNick());
 
         return userData;
+    }
+
+    public User getUser(HttpServletRequest request) {
+        Object email = request.getSession().getAttribute("email");
+        Optional<User> user = userRepository.findOneByEmail(String.valueOf(email));
+
+        if(user.isEmpty()) {
+            throw new BadRequestException("User doesn't exist.");
+        }
+
+        return user.get();
     }
 }

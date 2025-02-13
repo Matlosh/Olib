@@ -17,8 +17,10 @@ public class User {
     private String login;
     private String password;
 
+    /*
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Shelf> shelves;
+     */
 
     public User() {
 
@@ -29,14 +31,6 @@ public class User {
         this.nick = nick;
         this.login = login;
         this.password = password;
-    }
-
-    public User(String email, String nick, String login, String password, List<Shelf> shelves) {
-        this.email = email;
-        this.nick = nick;
-        this.login = login;
-        this.password = password;
-        this.shelves = shelves;
     }
 
     public long getId() {
@@ -83,14 +77,6 @@ public class User {
         this.password = password;
     }
 
-    public List<Shelf> getShelves() {
-        return shelves;
-    }
-
-    public void setShelves(List<Shelf> shelves) {
-        this.shelves = shelves;
-    }
-
     @Override
     public String toString() {
         return "User{" +
@@ -99,7 +85,6 @@ public class User {
                 ", nick='" + nick + '\'' +
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
-                ", shelves=" + shelves +
                 '}';
     }
 }

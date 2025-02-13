@@ -2,6 +2,7 @@ package com.example.backend;
 
 import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.ForbiddenException;
+import com.example.backend.exceptions.InternalServerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,5 +37,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({ ForbiddenException.class })
     public ResponseEntity<?> forbiddenException(Exception ex) {
         return new ResponseEntity<>(prepareResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value()), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({ InternalServerException.class })
+    public ResponseEntity<?> internalServerException(Exception ex) {
+        return new ResponseEntity<>(prepareResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

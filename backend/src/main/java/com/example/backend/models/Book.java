@@ -2,6 +2,7 @@ package com.example.backend.models;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,7 +19,7 @@ public class Book {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "shelf_id")
     )
-    private Set<Shelf> bookShelves;
+    private Set<Shelf> bookShelves = new HashSet<>();
 
     @Column(name = "name", nullable = false)
     private String name;

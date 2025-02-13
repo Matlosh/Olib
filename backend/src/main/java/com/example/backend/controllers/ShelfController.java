@@ -23,9 +23,4 @@ public class ShelfController {
     public List<Shelf> getAllShelves(@PathVariable long id) {
         return shelfService.getUserShelves(id);
     }
-
-    @PostMapping("/shelves")
-    public Shelf createShelf(@Validated @RequestBody Shelf shelf) {
-        return shelfService.createShelf(shelf);
-    }
 }

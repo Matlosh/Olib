@@ -13,16 +13,25 @@ public class Shelf {
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "library_id")
+    private Library library;
 
     @ManyToMany(mappedBy = "bookShelves")
     private Set<Book> books;
 
     private String name;
 
-    public Shelf(User user) {
-        this.user = user;
+    @Column(name = "is_default", nullable = false)
+    private boolean isDefault;
+
+    public Shelf() {}
+
+    public Shelf(Library library) {
+        this.library = library;
+    }
+
+    public Shelf(long id) {
+        this.id = id;
     }
 
     public long getId() {
@@ -33,12 +42,20 @@ public class Shelf {
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+    public Library getLibrary() {
+        return library;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setLibrary(Library library) {
+        this.library = library;
+    }
+
+    public Set<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(Set<Book> books) {
+        this.books = books;
     }
 
     @Column(name = "name", nullable = false)
@@ -50,11 +67,20 @@ public class Shelf {
         this.name = name;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean aDefault) {
+        isDefault = aDefault;
+    }
+
     @Override
     public String toString() {
         return "Shelf{" +
                 "id=" + id +
-                ", user=" + user +
+                ", library=" + library +
+                ", books=" + books +
                 ", name='" + name + '\'' +
                 '}';
     }
