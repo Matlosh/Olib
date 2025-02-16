@@ -1,8 +1,11 @@
 package com.example.backend.services;
 
+import com.example.backend.data.BookData;
 import com.example.backend.data.ISBNBookData;
 import com.example.backend.exceptions.InternalServerException;
+import com.example.backend.exceptions.MethodNotAllowedException;
 import com.example.backend.forms.BookAddForm;
+import com.example.backend.forms.BookEditForm;
 import com.example.backend.forms.ShelfForm;
 import com.example.backend.models.Book;
 import com.example.backend.models.Library;
@@ -10,6 +13,7 @@ import com.example.backend.models.Shelf;
 import com.example.backend.models.User;
 import com.example.backend.repositories.BookRepository;
 import com.example.backend.repositories.LibraryRepository;
+import com.example.backend.repositories.ShelfRepository;
 import com.example.backend.repositories.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,15 +42,17 @@ public class BookService {
     private final UserService userService;
     private final LibraryService libraryService;
     private final LibraryRepository libraryRepository;
+    private final ShelfRepository shelfRepository;
 
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository, ShelfService shelfService, UserService userService, LibraryService libraryService, LibraryRepository libraryRepository) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository, ShelfService shelfService, UserService userService, LibraryService libraryService, LibraryRepository libraryRepository, ShelfRepository shelfRepository) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.shelfService = shelfService;
         this.userService = userService;
         this.libraryService = libraryService;
         this.libraryRepository = libraryRepository;
+        this.shelfRepository = shelfRepository;
     }
 
     public ISBNBookData getBookDataByISBN(String isbn) {
@@ -85,35 +92,80 @@ public class BookService {
         return bookData;
     }
 
-    public Book addBook(BookAddForm bookAddForm, HttpServletRequest request) {
-        Book book = new Book();
+    // saveLibrary saves new default shelf in case default shelf doesn't exist
+    // bookId should be set in case of preparing book that's meant to be updated
+    public Book prepareBook(BookAddForm bookAddForm, HttpServletRequest request, Long bookId, Boolean saveLibrary) {
+        Book book = new Book(bookId);
+
         book.setName(bookAddForm.getName());
         book.setAuthor(bookAddForm.getAuthor());
         book.setISBN(bookAddForm.getISBN());
         book.setImageUrl(bookAddForm.getImageUrl());
+        book.setScore(bookAddForm.getScore());
+        book.setScored(bookAddForm.isScored());
 
         User user = userService.getUser(request);
-        List<Shelf> userShelves = shelfService.getUserShelves(user.getId());
+        Library library = libraryRepository.findOneByUser(user);
+
+        Set<Shelf> userShelves = shelfRepository.findByLibrary(library);
 
         Set<Shelf> bookShelves = new HashSet<>();
+        Shelf defaultShelf = userShelves.stream().filter(Shelf::isDefault).findFirst().orElse(null);
 
-        Library library = libraryService.getUserLibrary(request);
-
-        if(userShelves.stream().noneMatch(Shelf::isDefault)) {
+        if(defaultShelf == null) {
             ShelfForm shelfForm = new ShelfForm("All books");
 
-            Shelf shelf = shelfService.createShelf(shelfForm, request, true);
+            Shelf shelf = shelfService.addShelf(shelfForm, request, true);
             userShelves.add(shelf);
 
             library.setShelves(userShelves);
             bookShelves.add(shelf);
         }
 
-        bookShelves.addAll(userShelves.stream().filter(s -> bookAddForm.getShelves().contains(s.getId())).collect(Collectors.toSet()));
+        bookShelves.add(defaultShelf);
+
+        bookShelves.addAll(userShelves.stream()
+                .filter(s -> bookAddForm.getShelves().contains(s.getId()))
+                .collect(Collectors.toSet()));
 
         book.setBookShelves(bookShelves);
 
-        libraryRepository.save(library);
-        return bookRepository.save(book);
+        if(saveLibrary != null && saveLibrary) {
+            libraryRepository.save(library);
+        }
+
+        return book;
+    }
+
+    public BookData addBook(BookAddForm bookAddForm, HttpServletRequest request) {
+        Book book = prepareBook(bookAddForm, request, null, true);
+        return new BookData(bookRepository.save(book));
+    }
+
+    public BookData editBook(BookEditForm bookEditForm, HttpServletRequest request) {
+        if(!bookRepository.existsById(bookEditForm.getId())) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Book book = prepareBook(bookEditForm, request, bookEditForm.getId(), true);
+        return new BookData(bookRepository.save(book));
+    }
+
+    public void deleteBook(Long id, HttpServletRequest request) {
+        Optional<Book> optionalBook = bookRepository.findById(id);
+
+        if(optionalBook.isEmpty()) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Library library = libraryService.getUserLibrary(request);
+        Shelf defaultShelf = shelfRepository.findByIsDefaultTrueAndLibrary(library);
+
+        Book book = optionalBook.get();
+        if(!book.getBookShelves().contains(defaultShelf)) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        bookRepository.delete(book);
     }
 }

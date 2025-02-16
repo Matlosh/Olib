@@ -1,16 +1,37 @@
 package com.example.backend.forms;
 
 import com.example.backend.models.Shelf;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 import java.util.HashSet;
 import java.util.Set;
 
+
 public class BookAddForm {
+
     private String name;
     private String author;
     private String ISBN = "";
     private String imageUrl = "";
     private Set<Long> shelves = new HashSet<>();
+
+    @Min(value = 0, message = "Passed score must be between 0 and 100.")
+    @Max(value = 100, message = "")
+    private int score = 0;
+
+    private boolean isScored = false;
+
+    public BookAddForm(String name, String author, String ISBN, String imageUrl, Set<Long> shelves, int score, boolean isScored) {
+        this.name = name;
+        this.author = author;
+        this.ISBN = ISBN;
+        this.imageUrl = imageUrl;
+        this.shelves = shelves;
+        this.score = score;
+        this.isScored = isScored;
+    }
 
     public BookAddForm(String name, String author, String ISBN, String imageUrl, Set<Long> shelves) {
         this.name = name;
@@ -32,6 +53,13 @@ public class BookAddForm {
         this.author = author;
         this.ISBN = ISBN;
         this.shelves = shelves;
+    }
+
+    public BookAddForm(String name, String author, int score, boolean isScored) {
+        this.name = name;
+        this.author = author;
+        this.score = score;
+        this.isScored = isScored;
     }
 
     public BookAddForm(String name, String author, String ISBN) {
@@ -91,6 +119,22 @@ public class BookAddForm {
         this.shelves = shelves;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public boolean isScored() {
+        return isScored;
+    }
+
+    public void setScored(boolean scored) {
+        isScored = scored;
+    }
+
     @Override
     public String toString() {
         return "BookAddForm{" +
@@ -99,6 +143,8 @@ public class BookAddForm {
                 ", ISBN='" + ISBN + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", shelves=" + shelves +
+                ", score=" + score +
+                ", isScored=" + isScored +
                 '}';
     }
 }

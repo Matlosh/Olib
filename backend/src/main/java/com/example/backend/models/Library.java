@@ -3,6 +3,7 @@ package com.example.backend.models;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "libraries")
@@ -17,7 +18,7 @@ public class Library {
     private User user;
 
     @OneToMany(mappedBy = "library", fetch = FetchType.LAZY)
-    private List<Shelf> shelves;
+    private Set<Shelf> shelves;
 
     public Library() {}
 
@@ -41,11 +42,11 @@ public class Library {
         this.user = user;
     }
 
-    public List<Shelf> getShelves() {
+    public Set<Shelf> getShelves() {
         return shelves;
     }
 
-    public void setShelves(List<Shelf> shelves) {
+    public void setShelves(Set<Shelf> shelves) {
         this.shelves = shelves;
     }
 

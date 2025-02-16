@@ -1,8 +1,11 @@
 package com.example.backend.controllers;
 
+import com.example.backend.data.BookData;
 import com.example.backend.data.ISBNBookData;
 import com.example.backend.forms.BookAddForm;
+import com.example.backend.forms.BookEditForm;
 import com.example.backend.models.Book;
+import com.example.backend.responses.BaseResponse;
 import com.example.backend.services.BookService;
 import com.example.backend.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,8 +32,29 @@ public class BookController {
     }
 
     @PostMapping("/books/add")
-    public Book addBook(@Validated @RequestBody BookAddForm bookAddForm, HttpServletRequest request) {
+    public BookData addBook(@Validated @RequestBody BookAddForm bookAddForm, HttpServletRequest request) {
         userService.authenticate(request);
         return bookService.addBook(bookAddForm, request);
     }
+
+    @PutMapping("/books/edit")
+    public BookData editBook(@Validated @RequestBody BookEditForm bookEditForm, HttpServletRequest request) {
+        userService.authenticate(request);
+        return bookService.editBook(bookEditForm, request);
+    }
+
+    @DeleteMapping("/books/delete/{id}")
+    public BaseResponse deleteBook(@PathVariable Long id, HttpServletRequest request) {
+        userService.authenticate(request);
+        bookService.deleteBook(id, request);
+        return new BaseResponse(true, 200, "Book has been deleted.");
+    }
+
+    /*
+    // attach to shelf
+    @PostMapping("/books/attach")
+    public BaseResponse attachBook(HttpServletRequest request) {
+
+    }
+     */
 }

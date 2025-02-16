@@ -21,10 +21,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    /*
     @GetMapping("/users")
     public List<User> getAllUsers(HttpServletRequest request) {
         return userService.getAll();
     }
+     */
 
     @PostMapping("/user/register")
     public BaseResponse registerUser(@Validated @RequestBody RegisterForm form) {

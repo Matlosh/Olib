@@ -1,5 +1,6 @@
 package com.example.backend.models;
 
+import com.example.backend.forms.BookAddForm;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -11,7 +12,7 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToMany
     @JoinTable(
@@ -33,9 +34,46 @@ public class Book {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "score")
+    private int score;
+
+    @Column(name = "is_scored")
+    private boolean isScored = false;
+
     public Book() {}
 
-    public Book(long id, String name, String author, String ISBN, String imageUrl) {
+    public Book(Long id, Set<Shelf> bookShelves, String name, String author, String ISBN, String imageUrl, int score, boolean isScored) {
+        this.id = id;
+        this.bookShelves = bookShelves;
+        this.name = name;
+        this.author = author;
+        this.ISBN = ISBN;
+        this.imageUrl = imageUrl;
+        this.score = score;
+        this.isScored = isScored;
+    }
+
+    public Book(Long id, String name, String author, String ISBN, String imageUrl, int score, boolean isScored) {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+        this.ISBN = ISBN;
+        this.imageUrl = imageUrl;
+        this.score = score;
+        this.isScored = isScored;
+    }
+
+    public Book(Long id, String name, String author, String ISBN, String imageUrl, int score) {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+        this.ISBN = ISBN;
+        this.imageUrl = imageUrl;
+        this.score = score;
+        this.isScored = true;
+    }
+
+    public Book(Long id, String name, String author, String ISBN, String imageUrl) {
         this.id = id;
         this.name = name;
         this.author = author;
@@ -43,7 +81,7 @@ public class Book {
         this.imageUrl = imageUrl;
     }
 
-    public Book(long id, Set<Shelf> bookShelves, String name, String author, String ISBN, String imageUrl) {
+    public Book(Long id, Set<Shelf> bookShelves, String name, String author, String ISBN, String imageUrl) {
         this.id = id;
         this.bookShelves = bookShelves;
         this.name = name;
@@ -52,11 +90,15 @@ public class Book {
         this.imageUrl = imageUrl;
     }
 
-    public long getId() {
+    public Book(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -98,5 +140,21 @@ public class Book {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public boolean isScored() {
+        return isScored;
+    }
+
+    public void setScored(boolean scored) {
+        isScored = scored;
     }
 }
