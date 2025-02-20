@@ -20,6 +20,9 @@ public class Library {
     @OneToMany(mappedBy = "library", fetch = FetchType.LAZY)
     private Set<Shelf> shelves;
 
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic = false;
+
     public Library() {}
 
     public Library(User user) {
@@ -48,6 +51,14 @@ public class Library {
 
     public void setShelves(Set<Shelf> shelves) {
         this.shelves = shelves;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean aPublic) {
+        isPublic = aPublic;
     }
 
     @Override

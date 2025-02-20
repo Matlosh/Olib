@@ -3,6 +3,7 @@ package com.example.backend.controllers;
 import com.example.backend.data.BookData;
 import com.example.backend.data.ISBNBookData;
 import com.example.backend.forms.BookAddForm;
+import com.example.backend.forms.BookAttachForm;
 import com.example.backend.forms.BookEditForm;
 import com.example.backend.models.Book;
 import com.example.backend.responses.BaseResponse;
@@ -50,11 +51,19 @@ public class BookController {
         return new BaseResponse(true, 200, "Book has been deleted.");
     }
 
-    /*
-    // attach to shelf
+    // add to shelf/shelves
     @PostMapping("/books/attach")
-    public BaseResponse attachBook(HttpServletRequest request) {
-
+    public BaseResponse attachBook(@Validated @RequestBody BookAttachForm bookAttachForm, HttpServletRequest request) {
+        userService.authenticate(request);
+        bookService.addBookToShelves(bookAttachForm, request);
+        return new BaseResponse(true, 200, "Book has been added to the shelf(ves).");
     }
-     */
+
+    // remove from shelf/shelves
+    @DeleteMapping("/books/detach")
+    public BaseResponse detachBook(@Validated @RequestBody BookAttachForm bookDetachForm, HttpServletRequest request) {
+        userService.authenticate(request);
+        bookService.removeBookFromShelves(bookDetachForm, request);
+        return new BaseResponse(true, 200, "Book has been removed from the shelf(ves).");
+    }
 }

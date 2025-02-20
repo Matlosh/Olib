@@ -1,9 +1,6 @@
 package com.example.backend;
 
-import com.example.backend.exceptions.BadRequestException;
-import com.example.backend.exceptions.ForbiddenException;
-import com.example.backend.exceptions.InternalServerException;
-import com.example.backend.exceptions.MethodNotAllowedException;
+import com.example.backend.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -29,8 +26,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ RuntimeException.class })
     public ResponseEntity<?> runtimeException(Exception ex) {
-        System.out.println(ex);
-        System.out.println(Arrays.stream(ex.getStackTrace()).toList());
         return new ResponseEntity<>(prepareResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -52,6 +47,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({ MethodNotAllowedException.class })
     public ResponseEntity<?> methodNotAllowedException(Exception ex) {
         return new ResponseEntity<>(prepareResponse(ex.getMessage(), HttpStatus.METHOD_NOT_ALLOWED.value()), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler({ NotFoundException.class })
+    public ResponseEntity<?> notFoundException(Exception ex) {
+        return new ResponseEntity<>(prepareResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({ MethodArgumentNotValidException.class })

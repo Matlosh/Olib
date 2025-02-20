@@ -2,9 +2,11 @@ package com.example.backend.services;
 
 import com.example.backend.data.BookData;
 import com.example.backend.data.ISBNBookData;
+import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.InternalServerException;
 import com.example.backend.exceptions.MethodNotAllowedException;
 import com.example.backend.forms.BookAddForm;
+import com.example.backend.forms.BookAttachForm;
 import com.example.backend.forms.BookEditForm;
 import com.example.backend.forms.ShelfForm;
 import com.example.backend.models.Book;
@@ -151,7 +153,8 @@ public class BookService {
         return new BookData(bookRepository.save(book));
     }
 
-    public void deleteBook(Long id, HttpServletRequest request) {
+    // Validates if book exists and user has access to it, and returns it
+    public Book getUserBook(Long id, HttpServletRequest request) {
         Optional<Book> optionalBook = bookRepository.findById(id);
 
         if(optionalBook.isEmpty()) {
@@ -166,6 +169,49 @@ public class BookService {
             throw new MethodNotAllowedException("You do not have access to this resource.");
         }
 
-        bookRepository.delete(book);
+        return book;
+    }
+
+    public void deleteBook(Long id, HttpServletRequest request) {
+        bookRepository.delete(getUserBook(id, request));
+    }
+
+    public void addBookToShelves(BookAttachForm bookAttachForm, HttpServletRequest request) {
+        Book book = getUserBook(bookAttachForm.getBookId(), request);
+
+        Library library = libraryService.getUserLibrary(request);
+        Set<Shelf> userShelves = shelfRepository.findByLibrary(library);
+
+        Set<Shelf> shelvesToAdd = userShelves.stream()
+                .filter(s -> bookAttachForm.getShelves().contains(s.getId()))
+                .collect(Collectors.toSet());
+
+        if(shelvesToAdd.isEmpty()) {
+            throw new BadRequestException("You did not provide any correct shelves to add the book.");
+        }
+
+        Set<Shelf> bookShelves = book.getBookShelves();
+        bookShelves.addAll(shelvesToAdd);
+        book.setBookShelves(bookShelves);
+    }
+
+    public void removeBookFromShelves(BookAttachForm bookDetachForm, HttpServletRequest request) {
+        Book book = getUserBook(bookDetachForm.getBookId(), request);
+
+        Library library = libraryService.getUserLibrary(request);
+        Set<Shelf> userShelves = shelfRepository.findByLibrary(library);
+
+        Set<Shelf> shelvesToRemove = userShelves.stream()
+                .filter(s -> bookDetachForm.getShelves().contains(s.getId()))
+                .collect(Collectors.toSet());
+
+        if(shelvesToRemove.isEmpty()) {
+            throw new BadRequestException("You did not provide any correct shelves to remove the book from.");
+        }
+
+        Set<Shelf> bookShelves = book.getBookShelves().stream()
+                .filter(s -> !bookDetachForm.getShelves().contains(s.getId()))
+                .collect(Collectors.toSet());
+        book.setBookShelves(bookShelves);
     }
 }

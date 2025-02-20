@@ -2,6 +2,8 @@ package com.example.backend.services;
 
 import com.example.backend.data.BookData;
 import com.example.backend.data.ShelfData;
+import com.example.backend.exceptions.MethodNotAllowedException;
+import com.example.backend.forms.ShelfEditForm;
 import com.example.backend.forms.ShelfForm;
 import com.example.backend.models.Book;
 import com.example.backend.models.Library;
@@ -21,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ShelfService {
@@ -29,17 +32,19 @@ public class ShelfService {
     private final UserService userService;
     private final LibraryService libraryService;
     private final BookRepository bookRepository;
+    private final LibraryRepository libraryRepository;
 
     @Autowired
-    public ShelfService(ShelfRepository shelfRepository, UserService userService, LibraryService libraryService, BookRepository bookRepository) {
+    public ShelfService(ShelfRepository shelfRepository, UserService userService, LibraryService libraryService, BookRepository bookRepository, LibraryRepository libraryRepository) {
         this.shelfRepository = shelfRepository;
         this.userService = userService;
         this.libraryService = libraryService;
         this.bookRepository = bookRepository;
+        this.libraryRepository = libraryRepository;
     }
 
-    public Shelf addShelf(ShelfForm shelfForm, HttpServletRequest request, boolean isDefault) {
-        Shelf shelf = new Shelf();
+    public Shelf prepareShelf(ShelfForm shelfForm, HttpServletRequest request, Long shelfId, boolean isDefault) {
+        Shelf shelf = new Shelf(shelfId);
         shelf.setName(shelfForm.getName());
 
         Library library = libraryService.getUserLibrary(request);
@@ -47,7 +52,11 @@ public class ShelfService {
         shelf.setLibrary(library);
         shelf.setDefault(isDefault);
 
-        return shelfRepository.save(shelf);
+        return shelf;
+    }
+
+    public Shelf addShelf(ShelfForm shelfForm, HttpServletRequest request, boolean isDefault) {
+        return shelfRepository.save(prepareShelf(shelfForm, request, null, isDefault));
     }
 
     public ShelfData addShelf(ShelfForm shelfForm, HttpServletRequest request) {
@@ -55,10 +64,7 @@ public class ShelfService {
         return new ShelfData(shelfRepository.save(shelf));
     }
 
-    public Set<ShelfData> getAllShelves(HttpServletRequest request) {
-        Library library = libraryService.getUserLibrary(request);
-        Set<Shelf> shelves = shelfRepository.findByLibrary(library);
-
+    public Set<ShelfData> getAllShelves(Set<Shelf> shelves) {
         Set<ShelfData> shelvesData = new HashSet<>();
 
         for(final Shelf shelf : shelves) {
@@ -79,5 +85,79 @@ public class ShelfService {
         }
 
         return shelvesData;
+    }
+
+    public Set<ShelfData> getAllShelves(HttpServletRequest request) {
+        Library library = libraryService.getUserLibrary(request);
+        Set<Shelf> shelves = shelfRepository.findByLibrary(library);
+        return getAllShelves(shelves);
+    }
+
+    public Set<ShelfData> getAllShelves(Long libraryId) {
+        Optional<Library> optionalLibrary = libraryRepository.findById(libraryId);
+
+        if(optionalLibrary.isEmpty()) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Library library = optionalLibrary.get();
+        Set<Shelf> shelves = shelfRepository.findByLibrary(library);
+        return getAllShelves(shelves);
+    }
+
+    public void deleteShelf(Long id, HttpServletRequest request) {
+        if(!shelfRepository.existsById(id)) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Library library = libraryService.getUserLibrary(request);
+        Set<Shelf> shelves = shelfRepository.findByLibrary(library);
+        Optional<Shelf> shelf = shelves.stream().filter(s -> s.getId() == id).findFirst();
+
+        if(shelf.isEmpty()) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Shelf shelfToDelete = shelf.get();
+        boolean canContinue = true;
+        int pageNumber = 0;
+
+        while(canContinue) {
+            List<Book> shelfBooks = bookRepository.findAllByBookShelves(shelfToDelete, PageRequest.of(pageNumber, 100));
+
+            if((long) shelfBooks.size() > 0) {
+                shelfBooks.forEach(b -> {
+                    Set<Shelf> bookShelves = b.getBookShelves();
+                    b.setBookShelves(bookShelves.stream()
+                            .filter(s -> s.getId() != id)
+                            .collect(Collectors.toSet()));
+                });
+
+                bookRepository.saveAll(shelfBooks);
+                pageNumber++;
+            } else {
+                canContinue = false;
+            }
+        }
+
+        shelfRepository.delete(shelfToDelete);
+    }
+
+    public ShelfData editShelf(ShelfEditForm shelfEditForm, HttpServletRequest request) {
+        Shelf shelf = prepareShelf(shelfEditForm, request, shelfEditForm.getId(), false);
+        return new ShelfData(shelfRepository.save(shelf));
+    }
+
+    public Set<BookData> getShelfBooks(Long id, Integer page) {
+        Optional<Shelf> optionalShelf = shelfRepository.findById(id);
+
+        if(optionalShelf.isEmpty()) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Shelf shelf = optionalShelf.get();
+        List<Book> books = bookRepository.findAllByBookShelves(shelf, PageRequest.of(page, 100, Sort.by("id").descending()));
+
+        return books.stream().map(BookData::new).collect(Collectors.toSet());
     }
 }

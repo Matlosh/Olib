@@ -19,11 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BackendApplication {
 
-	@GetMapping("/")
-	public String me() {
-		return "Me";
-	}
-
 	@Bean
 	public PasswordEncoder encoder() {
 		return new BCryptPasswordEncoder();
