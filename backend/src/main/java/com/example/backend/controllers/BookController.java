@@ -1,6 +1,7 @@
 package com.example.backend.controllers;
 
 import com.example.backend.data.BookData;
+import com.example.backend.data.CoverUploadData;
 import com.example.backend.data.ISBNBookData;
 import com.example.backend.forms.BookAddForm;
 import com.example.backend.forms.BookAttachForm;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class BookController {
@@ -38,6 +40,19 @@ public class BookController {
         return bookService.addBook(bookAddForm, request);
     }
 
+    @PostMapping("/books/{id}/cover/upload")
+    public CoverUploadData uploadCover(@RequestParam("file") MultipartFile file, @PathVariable Long id, HttpServletRequest request) {
+        userService.authenticate(request);
+        return bookService.uploadCover(file, id, request);
+    }
+
+    @DeleteMapping("/books/{id}/cover/delete")
+    public BaseResponse deleteCover(@PathVariable Long id, HttpServletRequest request) {
+        userService.authenticate(request);
+        bookService.deleteCover(id, request);
+        return new BaseResponse(true, 200, "Book's cover was deleted.");
+    }
+
     @PutMapping("/books/edit")
     public BookData editBook(@Validated @RequestBody BookEditForm bookEditForm, HttpServletRequest request) {
         userService.authenticate(request);
@@ -48,7 +63,7 @@ public class BookController {
     public BaseResponse deleteBook(@PathVariable Long id, HttpServletRequest request) {
         userService.authenticate(request);
         bookService.deleteBook(id, request);
-        return new BaseResponse(true, 200, "Book has been deleted.");
+        return new BaseResponse(true, 200, "Book was deleted.");
     }
 
     // add to shelf/shelves
@@ -56,7 +71,7 @@ public class BookController {
     public BaseResponse attachBook(@Validated @RequestBody BookAttachForm bookAttachForm, HttpServletRequest request) {
         userService.authenticate(request);
         bookService.addBookToShelves(bookAttachForm, request);
-        return new BaseResponse(true, 200, "Book has been added to the shelf(ves).");
+        return new BaseResponse(true, 200, "Book was added to the shelf(ves).");
     }
 
     // remove from shelf/shelves

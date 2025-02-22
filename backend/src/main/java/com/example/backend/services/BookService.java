@@ -1,10 +1,12 @@
 package com.example.backend.services;
 
 import com.example.backend.data.BookData;
+import com.example.backend.data.CoverUploadData;
 import com.example.backend.data.ISBNBookData;
 import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.InternalServerException;
 import com.example.backend.exceptions.MethodNotAllowedException;
+import com.example.backend.exceptions.NotFoundException;
 import com.example.backend.forms.BookAddForm;
 import com.example.backend.forms.BookAttachForm;
 import com.example.backend.forms.BookEditForm;
@@ -22,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -45,9 +50,10 @@ public class BookService {
     private final LibraryService libraryService;
     private final LibraryRepository libraryRepository;
     private final ShelfRepository shelfRepository;
+    private final FileSystemStorageService storageService;
 
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository, ShelfService shelfService, UserService userService, LibraryService libraryService, LibraryRepository libraryRepository, ShelfRepository shelfRepository) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository, ShelfService shelfService, UserService userService, LibraryService libraryService, LibraryRepository libraryRepository, ShelfRepository shelfRepository, FileSystemStorageService storageService) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.shelfService = shelfService;
@@ -55,6 +61,7 @@ public class BookService {
         this.libraryService = libraryService;
         this.libraryRepository = libraryRepository;
         this.shelfRepository = shelfRepository;
+        this.storageService = storageService;
     }
 
     public ISBNBookData getBookDataByISBN(String isbn) {
@@ -213,5 +220,39 @@ public class BookService {
                 .filter(s -> !bookDetachForm.getShelves().contains(s.getId()))
                 .collect(Collectors.toSet());
         book.setBookShelves(bookShelves);
+    }
+
+    public CoverUploadData uploadCover(MultipartFile file, Long id, HttpServletRequest request) {
+        Book book = getUserBook(id, request);
+
+        Path path = storageService.load(storageService.store(file).getFileName().toString());
+
+        if(!book.getImageUrl().trim().isEmpty()) {
+            try {
+                deleteCover(book.getId(), request);
+            } catch(MethodNotAllowedException ignored) {}
+        }
+
+        book.setImageUrl(path.toString());
+
+        bookRepository.save(book);
+
+        CoverUploadData coverUploadData = new CoverUploadData();
+        coverUploadData.setImageUrl(path.toString());
+
+        return coverUploadData;
+    }
+
+    public void deleteCover(Long id, HttpServletRequest request) {
+        Book book = getUserBook(id, request);
+
+        if(book.getImageUrl().trim().isEmpty()) {
+            throw new MethodNotAllowedException("This book doesn't have a cover.");
+        }
+
+        storageService.deleteResource(storageService.unload(book.getImageUrl()));
+
+        book.setImageUrl("");
+        bookRepository.save(book);
     }
 }
