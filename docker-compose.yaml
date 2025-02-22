@@ -15,8 +15,7 @@ services:
             - .idea
             - .mvn
             - target
-    networks:
-      - backend
+    network_mode: host
 
   olib-database:
     image: 'postgres:latest'
@@ -29,7 +28,17 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./database/db-data/:/var/lib/postgresql/data/
+    network_mode: host
 
-networks:
-  backend:
-    driver: host
+  olib-frontend:
+    build: ./frontend
+    container_name: olib-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - ./frontend/node_modules:/app/node_modules
+    depends_on:
+      - olib-database
+      - spring
+    network_mode: host
