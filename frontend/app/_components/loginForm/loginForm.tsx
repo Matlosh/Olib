@@ -2,11 +2,11 @@
 
 import {Button, Card, Form, Input, Spinner} from "@heroui/react"
 import {useActionState} from "react";
-import {login} from "./actions";
 import {apiInitialState} from "@/app/_utils/reusable";
+import {loginUser} from "@/app/_actions/user/actions";
 
 export default function LoginForm() {
-  const [state, formAction, pending] = useActionState(login, apiInitialState);
+  const [state, formAction, pending] = useActionState(loginUser, apiInitialState);
 
   return (
     <Card className="p-4 w-full max-w-[500px] flex flex-col items-center justify-center">
