@@ -1,13 +1,14 @@
 'use client';
 
 import {Button, Card, Form, Input, Spinner} from "@heroui/react"
-import {register} from "./actions";
 import {startTransition, useActionState, useEffect} from "react";
 import {apiInitialState} from "@/app/_utils/reusable";
 import {useRouter} from "next/navigation";
+import {registerUser} from "@/app/_actions/user/actions";
+import FormStatus from "../formStatus/formStatus";
 
 export default function RegisterForm() {
-  const [state, formAction, pending] = useActionState(register, apiInitialState);  
+  const [state, formAction, pending] = useActionState(registerUser, apiInitialState);  
   const router = useRouter();
 
   useEffect(() => {
@@ -76,11 +77,7 @@ export default function RegisterForm() {
         </Button>
       </Form>
 
-      {pending && <Spinner />}
-      
-      {state.success && <p className="text-green-500">{state.message}</p>}
-      {!state.success && <p className="text-red-500">{state.message}</p>}
+      <FormStatus formState={state} pending={pending} />
     </Card>
-
   );
 }

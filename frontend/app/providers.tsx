@@ -1,11 +1,17 @@
 'use client';
 
-import { HeroUIProvider } from "@heroui/react";
+import { HeroUIProvider, ToastProvider } from "@heroui/react";
+import {createContext} from "react";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export const MeContext = createContext<UserData | undefined>(undefined);
+
+export function Providers({ me, children }: { me: UserData | undefined, children: React.ReactNode }) {
   return (
     <HeroUIProvider>
-      {children}
+      <MeContext.Provider value={me}>
+        <ToastProvider />
+        {children}
+      </MeContext.Provider>
     </HeroUIProvider>
   );
 }

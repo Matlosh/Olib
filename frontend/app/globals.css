@@ -21,3 +21,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 */
+:root {
+  --primary: #22282E;
+  --secondary: #D19054;
+  --tertiary: #9C1A43;
+  --ps: 1400px;
+}

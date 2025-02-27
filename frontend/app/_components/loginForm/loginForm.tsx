@@ -1,12 +1,20 @@
 'use client';
 
 import {Button, Card, Form, Input, Spinner} from "@heroui/react"
-import {useActionState} from "react";
+import {useActionState, useEffect} from "react";
 import {apiInitialState} from "@/app/_utils/reusable";
 import {loginUser} from "@/app/_actions/user/actions";
+import {useRouter} from "next/navigation";
 
 export default function LoginForm() {
   const [state, formAction, pending] = useActionState(loginUser, apiInitialState);
+  const router = useRouter();
+
+  useEffect(() => {
+    if(state.success) {
+      router.push("/dashboard");
+    }
+  }, [state]);
 
   return (
     <Card className="p-4 w-full max-w-[500px] flex flex-col items-center justify-center">
@@ -45,10 +53,9 @@ export default function LoginForm() {
 
         {pending && <Spinner />}
         
-        {state.success && <p className="text-green-500">{state.message}</p>}
-        {!state.success && <p className="text-red-500">{state.message}</p>}
+        {state.success && state.message.length > 0 && <p className="text-green-500">{state.message}</p>}
+        {!state.success && state.message.length > 0 && <p className="text-red-500">{state.message}</p>}
       </Form>
     </Card>
-
   );
 }

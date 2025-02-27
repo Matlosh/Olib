@@ -11,9 +11,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primary: 'var(--primary)',
+        secondary: 'var(--secondary)',
+        tertiary: 'var(--tertiary)'
       },
+      screens: {
+        'ps': '1400px'
+      },
+      width: {
+        'ps': 'var(--ps)'
+      },
+      spacing: {
+        'ps': 'var(--ps)'
+      },
+      maxWidth: {
+        'ps': 'var(--ps)'
+      }
     },
   },
   darkMode: "class",
