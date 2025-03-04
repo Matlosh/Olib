@@ -15,7 +15,8 @@ export async function apiFetch<T = ApiResponse>(
   url: string,
   method: string,
   headers?: { [key: string]: string }, 
-  body?: any)
+  body?: any,
+  stringifyBody: boolean = true)
 : Promise<ApiResponse | T> {
   try {
     const requestInit: RequestInit = {
@@ -26,14 +27,14 @@ export async function apiFetch<T = ApiResponse>(
       }
     };
 
-    if(body) {
+    if(body && stringifyBody) {
       requestInit.body = JSON.stringify(body); 
     }
 
     if(['POST', 'PUT', 'PATCH'].includes(method)) {
       requestInit.headers = {
-        ...requestInit.headers,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...requestInit.headers
       };
     }
 

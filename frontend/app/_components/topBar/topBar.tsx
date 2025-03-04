@@ -1,16 +1,11 @@
-'use client';
-
-import BarAvatar from "./barAvatar";
-import CreateBox from "./createBox";
-
+import SearchBar from "./searchBar";
 
 export default function TopBar() {
   return (
-    <div className="w-full h-[75px] shadow-lg bg-primary sticky top-0 text-white flex flex-col items-center justify-center">
-      <div className="max-w-ps w-full flex flex-row px-4 ps:px-0 justify-between items-center">
-        <BarAvatar />                
-        <CreateBox />
-      </div>
+    <div className="w-full h-[40px] flex flex-row items-center relative">
+      <h2 className="text-2xl font-bold">Dashboard</h2>
+
+      <SearchBar />
     </div>
   );
 }
