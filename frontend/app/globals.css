@@ -27,3 +27,15 @@ body {
   --tertiary: #9C1A43;
   --ps: 1400px;
 }
+
+.-rotate-x-90 {
+  transform: rotateX(-90deg);
+}
+
+.rotate-x-66 {
+  transform: rotateX(66deg);
+}
+
+.perspective-500 {
+  perspective: 500px;
+}

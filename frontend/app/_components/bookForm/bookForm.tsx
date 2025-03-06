@@ -2,22 +2,80 @@
 
 import {addShelf, editShelf} from "@/app/_actions/shelves/actions";
 import {apiInitialState} from "@/app/_utils/reusable";
-import {Button, Checkbox, Form, Input, Spinner} from "@heroui/react";
+import {Button, Checkbox, Form, Input, Spinner, addToast} from "@heroui/react";
 import {startTransition, useActionState, useEffect, useRef, useState} from "react";
 import FormStatus from "../formStatus/formStatus";
+import {addBook, editBook, getBookDataByISBN} from "@/app/_actions/books/actions";
+import useFormInput from "@/app/_hooks/useFormInput";
 
 export default function BookForm({ editMode = false }: { editMode?: boolean }) {
-  const [state, formAction, pending] = useActionState(editMode ? editShelf : addShelf, apiInitialState);
+  const [state, formAction, pending] = useActionState(editMode ? editBook : addBook, apiInitialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [isScored, setIsScored] = useState(false);
   const [uploadCoverFromURL, setUploadCoverFromURL] = useState(false);
-  const [ISBN, setISBN] = useState('');
+  const [isbnSearchPending, setIsbnSearchPending] = useState(false);
+
+  const fields = {
+    name: useFormInput(),
+    author: useFormInput(),
+    isbn: useFormInput(),
+    imageUrl: useFormInput()
+  };
 
   useEffect(() => {
+    console.log(state);
     if('id' in state && state.id && formRef.current) {
       formRef.current.reset();
+
+      for(const field of Object.values(fields)) {
+        field.setValue('');
+      }
     }
   }, [state]);
+
+  const fillDetailsByISBN = () => {
+    (async () => {
+      setIsbnSearchPending(true);
+      try {
+        const bookData = await getBookDataByISBN(fields.isbn.value);
+        let isOkay = false;
+
+        for(const [key, value] of Object.entries(bookData)) {
+          if(key in fields) {
+            if(value.toString().length > 0) {
+              isOkay = true;
+            }
+
+            if(key === 'imageUrl' && value.toString().length > 0) {
+              setUploadCoverFromURL(true);
+            }
+
+            fields[(key as keyof typeof fields)].setValue(value.toString());
+          }
+        }
+
+        if(isOkay) {
+          addToast({
+            title: 'The applicable data was filled in.',
+            color: 'success'
+          });
+        } else {
+          addToast({
+            title: 'Fetching data by ISBN has failed.',
+            description: 'Could not find book with ISBN like this.',
+            color: 'danger'
+          });
+        }
+      } catch(err) {
+        addToast({
+          title: 'Fetching data by ISBN has failed.',
+          description: 'Server failed.',
+          color: 'danger'
+        });
+      }
+      setIsbnSearchPending(false);
+    })();
+  };
 
   return (
     <div className="flex flex-col gap-2 pt-2">
@@ -45,6 +103,8 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           labelPlacement="inside"
           name="name"
           type="text"
+          value={fields.name.value}
+          onInput={fields.name.onChange}
         /> 
         
         <Input
@@ -54,6 +114,8 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           labelPlacement="inside"
           name="author"
           type="text"
+          value={fields.author.value}
+          onInput={fields.author.onChange}
         /> 
 
         <Input
@@ -62,16 +124,22 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           labelPlacement="inside"
           name="isbn"
           type="text"
-          onInput={e => setISBN(e.currentTarget.value)}
+          value={fields.isbn.value}
+          onInput={fields.isbn.onChange}
         />
 
-        {ISBN.trim().length > 0 &&
+        {fields.isbn.value.trim().length >= 10 &&
           <div className="flex flex-row gap-4">
-            <Button type="button" color="primary">
+            <Button
+              type="button"
+              color="primary"
+              onPress={_ => fillDetailsByISBN()}>
               Fill book details via ISBN 
             </Button>
 
-            <Spinner />
+            {isbnSearchPending && 
+              <Spinner />
+            }
           </div>
         }
 
@@ -90,18 +158,22 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
             label="Cover photo URL"
             errorMessage="Please enter correct cover photo URL"
             labelPlacement="inside"
-            name="imageurl"
+            name="imageUrl"
             type="text"
+            value={fields.imageUrl.value}
+            onInput={fields.imageUrl.onChange}
           />
         }
 
         <Checkbox
+          isSelected={uploadCoverFromURL}
           onChange={e => setUploadCoverFromURL(e.currentTarget.checked)}>
           Upload cover via image URL</Checkbox>
 
         <Checkbox
           name="scored"
-          onChange={e => setIsScored(e.currentTarget.checked)}>
+          onChange={e => setIsScored(e.currentTarget.checked)}
+          value="true">
           Add a score</Checkbox>
 
         {isScored &&
@@ -126,7 +198,7 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
         formState={state}
         pending={pending}
         successProperty="id"
-        sucessMessage="Shelf has been added successfully."
+        sucessMessage="Book has been added successfully."
         />
     </div>
   );
