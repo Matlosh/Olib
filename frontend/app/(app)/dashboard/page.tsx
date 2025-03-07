@@ -7,7 +7,7 @@ export default async function Page() {
   return (
     <div className="w-full">
       {!('message' in shelves) && shelves.map((shelf) => (
-        <ShelfCard key={shelf.id} shelf={shelf} />
+        <ShelfCard key={shelf.id} shelf={shelf} isLastALink={true} />
       ))}
     </div>
   );

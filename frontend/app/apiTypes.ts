@@ -6,11 +6,11 @@ type UserData = {
 
 type BookData = {
   id: number,
-  shelvesids: number[],
+  shelvesIds: number[],
   name: string,
   author: string,
   isbn: string,
-  imageurl: string,
+  imageUrl: string,
   score: number,
   scored: boolean
 };
