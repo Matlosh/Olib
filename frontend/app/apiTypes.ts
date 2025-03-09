@@ -22,3 +22,7 @@ type ShelfData = {
   default: boolean,
   bookscount: number
 };
+
+type CoverData = {
+  imageUrl: string
+};

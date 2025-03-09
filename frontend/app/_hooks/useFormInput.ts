@@ -1,11 +1,11 @@
 import {useState} from "react";
 
-export default function useFormInput() {
-  const [value, setValue] = useState('');
+export default function useFormInput<T = string>(defaultValue: T) {
+  const [value, setValue] = useState<T>(defaultValue);
   
   return {
     value,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
-    setValue
+    setValue,
+    reset: () => setValue(defaultValue)
   };
 }

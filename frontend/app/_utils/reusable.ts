@@ -27,3 +27,7 @@ export function excerptString(text: string, length: number, suffix: string = '..
 
   return words.join(' ') + suffix;
 }
+
+export function getImageFullUrl(imageUrl: string): string {
+  return imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${imageUrl}`;
+}

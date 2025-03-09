@@ -1,37 +1,152 @@
 'use client';
 
-import {addShelf, editShelf} from "@/app/_actions/shelves/actions";
-import {apiInitialState} from "@/app/_utils/reusable";
-import {Button, Checkbox, Form, Input, Spinner, addToast} from "@heroui/react";
-import {startTransition, useActionState, useEffect, useRef, useState} from "react";
+import {addShelf, editShelf, getUserShelves} from "@/app/_actions/shelves/actions";
+import {ApiResponse, apiInitialState} from "@/app/_utils/reusable";
+import {Button, Checkbox, Form, Input, Select, SelectItem, Spinner, addToast} from "@heroui/react";
+import {startTransition, useActionState, useContext, useEffect, useRef, useState} from "react";
 import FormStatus from "../formStatus/formStatus";
-import {addBook, editBook, getBookDataByISBN} from "@/app/_actions/books/actions";
+import {addBook, editBook, getBookDataByISBN, getBookShelves, uploadCover} from "@/app/_actions/books/actions";
 import useFormInput from "@/app/_hooks/useFormInput";
+import {LibraryContext} from "@/app/_providers/libraryProvider";
 
-export default function BookForm({ editMode = false }: { editMode?: boolean }) {
+type BookFormProps = {
+  editMode?: boolean,
+  book?: BookData
+};
+
+type BookStringKeys = 'name' | 'author' | 'isbn' | 'imageUrl';
+
+export default function BookForm({
+  editMode = false,
+  book
+}: BookFormProps) {
   const [state, formAction, pending] = useActionState(editMode ? editBook : addBook, apiInitialState);
   const formRef = useRef<HTMLFormElement>(null);
-  const [isScored, setIsScored] = useState(false);
-  const [uploadCoverFromURL, setUploadCoverFromURL] = useState(false);
   const [isbnSearchPending, setIsbnSearchPending] = useState(false);
+  const [allShelves, setAllShelves] = useState<ShelfData[]>([]);
+  const libraryContext = useContext(LibraryContext);
 
   const fields = {
-    name: useFormInput(),
-    author: useFormInput(),
-    isbn: useFormInput(),
-    imageUrl: useFormInput()
+    name: useFormInput(''),
+    author: useFormInput(''),
+    isbn: useFormInput(''),
+    imageUrl: useFormInput(''),
+    score: useFormInput(0),
+    isScored: useFormInput<boolean>(false),
+    shelves: useFormInput<number[]>([]),
+    uploadCoverFromURL: useFormInput<boolean>(false),
+    uploadedFile: useFormInput<File | null>(null)
   };
 
   useEffect(() => {
-    console.log(state);
-    if('id' in state && state.id && formRef.current) {
+    if(editMode && book) {
+      ['name', 'author', 'isbn', 'imageUrl'].forEach(key => {
+        fields[key as BookStringKeys].setValue(book[key as BookStringKeys]);
+      });
+
+      fields.score.setValue(book.score);
+      fields.isScored.setValue(book.scored);
+      fields.shelves.setValue(book.shelvesIds);
+      
+      if(fields.imageUrl.value.trim().length > 0) {
+        fields.uploadCoverFromURL.setValue(true);
+      }
+    }
+  }, [editMode, book]);
+
+  useEffect(() => {
+    resetFormWhenSent();
+
+    (async () => {
+      await uploadBookCover();
+      updateLibraryContext();
+    })();
+  }, [state]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const shelves = await getUserShelves();
+        if(!('message' in shelves)) {
+          setAllShelves(shelves);
+        }
+      } catch(err) {
+        addToast({
+          title: 'Fetching shelves has failed.',
+          description: 'Server failed.',
+          color: 'danger'
+        });
+      }
+    })();
+  }, []);
+
+  const uploadBookCover = async () => {
+    if('id' in state && state.id && fields.uploadedFile.value !== null) {
+      const formData = new FormData();
+      formData.append('id', state.id.toString());
+      formData.append('file', fields.uploadedFile.value);
+
+      const coverUploadData = await uploadCover(null, formData);
+      console.log(coverUploadData);
+
+      if(!('message' in coverUploadData)) {
+        if(editMode) {
+          fields.imageUrl.setValue(coverUploadData.imageUrl);
+          fields.uploadCoverFromURL.setValue(true);
+        }
+      }
+    }
+  };
+
+  const resetFormWhenSent = () => {
+    if(!editMode && 'id' in state && state.id && formRef.current) {
       formRef.current.reset();
 
       for(const field of Object.values(fields)) {
-        field.setValue('');
+        field.reset();
       }
     }
-  }, [state]);
+  };
+
+  const updateLibraryContext = () => {
+    if(libraryContext.value && 'id' in state && state.id) {
+      const shelves = [...libraryContext.value];
+      if(editMode) {
+        if(book) {
+          const oldShelvesIds = book.shelvesIds;
+          const newShelvesIds = fields.shelves.value;
+
+          const shelvesToRemove = oldShelvesIds.filter(id => !newShelvesIds.includes(id));
+          const shelvesToAdd = newShelvesIds.filter(id => !oldShelvesIds.includes(id));
+
+          if(shelvesToRemove.length > 0) {
+            for(const shelf of shelves) {
+              if(shelvesToRemove.includes(shelf.id)) {
+                shelf.books = shelf.books.filter(book => book.id !== state.id);
+              }
+            }
+          }
+
+          if(shelvesToAdd.length > 0) {
+            for(const shelf of shelves) {
+              if(shelvesToAdd.includes(shelf.id)) {
+                shelf.books.push(state);
+              }
+            }
+          }
+
+        }
+      } else {
+        for(const shelf of shelves) {
+          if(fields.shelves.value.includes(shelf.id)) {
+            shelf.books.push(state);
+          }
+        }
+      }
+
+      libraryContext.setValue(shelves);
+    }
+  };
 
   const fillDetailsByISBN = () => {
     (async () => {
@@ -41,16 +156,19 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
         let isOkay = false;
 
         for(const [key, value] of Object.entries(bookData)) {
-          if(key in fields) {
+          if(key in ['name', 'author', 'isbn', 'imageUrl']) {
             if(value.toString().length > 0) {
               isOkay = true;
             }
 
             if(key === 'imageUrl' && value.toString().length > 0) {
-              setUploadCoverFromURL(true);
+              fields.uploadCoverFromURL.setValue(true);
             }
 
-            fields[(key as keyof typeof fields)].setValue(value.toString());
+            const field = fields[(key as 'name' | 'author' | 'isbn' | 'imageUrl')];
+
+            // ISBN Api returns only strings
+            field.setValue(value.toString());
           }
         }
 
@@ -96,6 +214,14 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
         }}
         ref={formRef}>
 
+        {editMode && book && 
+          <Input
+            hidden
+            name="id"
+            value={book.id.toString()}
+            className="hidden" />
+        }
+
         <Input
           isRequired
           label="Name"
@@ -104,7 +230,7 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           name="name"
           type="text"
           value={fields.name.value}
-          onInput={fields.name.onChange}
+          onInput={e => fields.name.setValue(e.currentTarget.value)}
         /> 
         
         <Input
@@ -115,7 +241,7 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           name="author"
           type="text"
           value={fields.author.value}
-          onInput={fields.author.onChange}
+          onInput={e => fields.author.setValue(e.currentTarget.value)}
         /> 
 
         <Input
@@ -125,7 +251,7 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           name="isbn"
           type="text"
           value={fields.isbn.value}
-          onInput={fields.isbn.onChange}
+          onInput={e => fields.isbn.setValue(e.currentTarget.value)}
         />
 
         {fields.isbn.value.trim().length >= 10 &&
@@ -143,17 +269,18 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
           </div>
         }
 
-        {!uploadCoverFromURL &&
+        {!fields.uploadCoverFromURL.value &&
           <Input
             label="Cover photo"
             errorMessage="Please upload correct cover photo"
             labelPlacement="inside"
             name="file"
             type="file"
+            onChange={e => fields.uploadedFile.setValue(e.currentTarget.files?.item(0) || null)}
           />
         }
 
-        {uploadCoverFromURL &&
+        {fields.uploadCoverFromURL.value &&
           <Input
             label="Cover photo URL"
             errorMessage="Please enter correct cover photo URL"
@@ -161,22 +288,34 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
             name="imageUrl"
             type="text"
             value={fields.imageUrl.value}
-            onInput={fields.imageUrl.onChange}
+            onInput={e => fields.imageUrl.setValue(e.currentTarget.value)}
           />
         }
 
         <Checkbox
-          isSelected={uploadCoverFromURL}
-          onChange={e => setUploadCoverFromURL(e.currentTarget.checked)}>
+          isSelected={fields.uploadCoverFromURL.value}
+          onChange={e => fields.uploadCoverFromURL.setValue(e.currentTarget.checked)}>
           Upload cover via image URL</Checkbox>
+
+        <Select
+          label="Shelves"
+          placeholder="Select book's shelves"
+          selectionMode="multiple"
+          name="shelves"
+          selectedKeys={fields.shelves.value.map(id => id.toString())}
+          onSelectionChange={keys => fields.shelves.setValue(Array.from(keys).map(value => Number(value)))}>
+          {allShelves.map(shelf => (
+            <SelectItem key={shelf.id}>{shelf.name}</SelectItem>
+          ))} 
+        </Select>
 
         <Checkbox
           name="scored"
-          onChange={e => setIsScored(e.currentTarget.checked)}
+          onChange={e => fields.isScored.setValue(e.currentTarget.checked)}
           value="true">
           Add a score</Checkbox>
 
-        {isScored &&
+        {fields.isScored.value &&
           <Input
             isRequired
             label="Score"
@@ -186,11 +325,13 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
             type="number"
             min="0"
             max="100"
+            value={fields.score.value.toString()}
+            onInput={e => fields.score.setValue(Number(e.currentTarget.value))}
           />
         }
 
         <Button type="submit" color="primary">
-          Add
+          {editMode ? "Edit" : "Add"}
         </Button>
       </Form>
 
@@ -198,8 +339,12 @@ export default function BookForm({ editMode = false }: { editMode?: boolean }) {
         formState={state}
         pending={pending}
         successProperty="id"
-        sucessMessage="Book has been added successfully."
-        />
+        successMessage={
+          editMode ?
+            "Book has been edited successfully."
+            :
+            "Book has been added successfully."
+        } />
     </div>
   );
 }

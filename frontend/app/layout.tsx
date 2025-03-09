@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Josefin_Sans } from "next/font/google";
 import "./globals.css";
-import {Providers} from "./providers";
+import {Providers} from "./_providers/providers";
 import {getMe} from "./_actions/user/actions";
 
 const josefinSans = Josefin_Sans({

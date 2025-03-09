@@ -1,24 +1,47 @@
 'use server';
 
+import {ApiResponse} from "@/app/_utils/reusable";
 import {apiFetch} from "../reusable";
 
-export async function addBook(prevState: any, formData: FormData) {
+// Prepares body for the book API
+function prepareBody(body: { [key: string]: any }, formData: FormData) {
+  const shelves: string[] = formData.getAll('shelves') as string[];
+  const shelfIds: number[] = shelves.map(shelf => Number(shelf));
+
+  body.shelves = shelfIds;
+}
+
+export async function getBookShelves(bookId: number) {
+  return await apiFetch(
+    async (json) => json,
+    `${process.env.BACKEND_URL}/books/${bookId}/shelves`,
+    'GET'
+  );
+}
+
+export async function addBook(prevState: any, formData: FormData): Promise<ApiResponse | BookData> {
+  let body = Object.fromEntries(formData);
+  prepareBody(body, formData);
+
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/books/add`,
     'POST',
     {},
-    Object.fromEntries(formData)
+    body
   );
 }
 
-export async function editBook(prevState: any, formData: FormData) {
+export async function editBook(prevState: any, formData: FormData): Promise<ApiResponse | BookData> {
+  let body = Object.fromEntries(formData);
+  prepareBody(body, formData);
+
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/books/edit`,
     'PUT',
     {},
-    Object.fromEntries(formData)
+    body
   );
 }
 
@@ -43,12 +66,18 @@ export async function attachBook(prevState: any, formData: FormData) {
 }
 
 export async function detachBook(prevState: any, formData: FormData) {
+  // TODO: Fix backend not approving of request error
+  let body = Object.fromEntries(formData) as {[key: string]: any};
+  prepareBody(body, formData);
+
+  body.bookId = Number(body.bookId);
+
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/books/detach`,
     'DELETE',
     {},
-    Object.fromEntries(formData)
+    body 
   ); 
 }
 
@@ -60,9 +89,10 @@ export async function getBookDataByISBN(isbn: string) {
   );
 }
 
-export async function uploadCover(prevState: any, formData: FormData) {
+export async function uploadCover(prevState: any, formData: FormData): Promise<ApiResponse | CoverData> {
   const bookId = formData.get('id');
 
+  // TODO: Fix backend not approving of request error
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/books/${bookId}/cover/upload`,

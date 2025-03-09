@@ -33,7 +33,7 @@ export default function ShelfCard({
         <div className="w-[100px]"></div>
 
         {shelf.books.slice(0, maxSize).map((book, i) => (
-          <BookCard key={i} book={book} />
+          <BookCard key={i} book={book} shelf={shelf} />
         ))}
 
         {isLastALink &&

@@ -1,6 +1,6 @@
 'use client';
 
-import {excerptString} from "@/app/_utils/reusable";
+import {excerptString, getImageFullUrl} from "@/app/_utils/reusable";
 import {Image, Modal, ModalBody, ModalContent, ModalHeader} from "@heroui/react";
 import {useEffect, useState} from "react";
 import Stars from "../stars/stars";
@@ -8,10 +8,14 @@ import BookInfoCard from "./bookInfoCard";
 import clsx from "clsx";
 
 type BookCardProps = {
-  book: BookData 
+  book: BookData,
+  shelf: ShelfData
 };
 
-export default function BookCard({ book }: BookCardProps) {
+export default function BookCard({
+  book,
+  shelf
+}: BookCardProps) {
   const [isInfoBoxOpened, setIsInfoBoxOpened] = useState(false);
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export default function BookCard({ book }: BookCardProps) {
           <Image
             isBlurred
             alt={book.name}
-            src={book.imageUrl.length > 0 ? book.imageUrl : '/images/book-placeholder.webp'}
+            src={book.imageUrl.length > 0 ? getImageFullUrl(book.imageUrl) : '/images/book-placeholder.webp'}
             width={150}
             height={200}
             className="object-cover"
@@ -52,7 +56,9 @@ export default function BookCard({ book }: BookCardProps) {
           {(onClose) => (
             <>
               <ModalBody>
-                <BookInfoCard book={book} /> 
+                <BookInfoCard
+                  book={book}
+                  shelf={shelf} /> 
               </ModalBody>
             </>
           )}
