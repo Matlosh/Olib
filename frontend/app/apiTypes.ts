@@ -20,7 +20,7 @@ type ShelfData = {
   books: BookData[],
   name: string,
   default: boolean,
-  bookscount: number
+  booksCount: number
 };
 
 type CoverData = {

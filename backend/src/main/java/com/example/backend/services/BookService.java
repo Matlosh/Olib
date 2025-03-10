@@ -3,6 +3,7 @@ package com.example.backend.services;
 import com.example.backend.data.BookData;
 import com.example.backend.data.CoverUploadData;
 import com.example.backend.data.ISBNBookData;
+import com.example.backend.data.ShelfData;
 import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.InternalServerException;
 import com.example.backend.exceptions.MethodNotAllowedException;
@@ -254,5 +255,16 @@ public class BookService {
 
         book.setImageUrl("");
         bookRepository.save(book);
+    }
+
+    public Set<ShelfData> getBookShelves(Long id, HttpServletRequest request) {
+        Optional<Book> optionalBook = bookRepository.findById(id);
+
+        if(optionalBook.isEmpty()) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        Set<Shelf> shelves = shelfRepository.findAllByBooks(optionalBook.get());
+        return shelves.stream().map(ShelfData::new).collect(Collectors.toSet());
     }
 }

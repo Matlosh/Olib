@@ -3,6 +3,7 @@ package com.example.backend.controllers;
 import com.example.backend.data.BookData;
 import com.example.backend.data.CoverUploadData;
 import com.example.backend.data.ISBNBookData;
+import com.example.backend.data.ShelfData;
 import com.example.backend.forms.BookAddForm;
 import com.example.backend.forms.BookAttachForm;
 import com.example.backend.forms.BookEditForm;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Set;
 
 @RestController
 public class BookController {
@@ -32,6 +35,13 @@ public class BookController {
     public ISBNBookData getBookDataByISBN(@PathVariable String isbn, HttpServletRequest request) {
         userService.authenticate(request);
         return bookService.getBookDataByISBN(isbn);
+    }
+
+    // Fetches all shelves that book with this id contains
+    @GetMapping("/books/{id}/shelves")
+    public Set<ShelfData> getBookShelves(@PathVariable Long id, HttpServletRequest request) {
+        userService.authenticate(request);
+        return bookService.getBookShelves(id, request);
     }
 
     @PostMapping("/books/add")

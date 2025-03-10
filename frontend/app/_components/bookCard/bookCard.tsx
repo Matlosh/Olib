@@ -38,7 +38,7 @@ export default function BookCard({
           />
         </div>
 
-        <div className="flex-1 p-4 flex-col gap-2 hidden 2xl:flex">
+        <div className="flex-1 p-4 flex-col gap-2 flex md:hidden 2xl:flex">
           <div className={clsx(!book.scored && 'invisible')}>
             <Stars value={book.score} maxValue={100} maxStars={5} />
           </div>

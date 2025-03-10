@@ -4,7 +4,7 @@ import {addShelf, editShelf, getUserShelves} from "@/app/_actions/shelves/action
 import {ApiResponse, apiInitialState} from "@/app/_utils/reusable";
 import {Button, Checkbox, Form, Input, Select, SelectItem, Spinner, addToast} from "@heroui/react";
 import {startTransition, useActionState, useContext, useEffect, useRef, useState} from "react";
-import FormStatus from "../formStatus/formStatus";
+import FormStatus, {StatusMessage} from "../formStatus/formStatus";
 import {addBook, editBook, getBookDataByISBN, getBookShelves, uploadCover} from "@/app/_actions/books/actions";
 import useFormInput from "@/app/_hooks/useFormInput";
 import {LibraryContext} from "@/app/_providers/libraryProvider";
@@ -25,6 +25,10 @@ export default function BookForm({
   const [isbnSearchPending, setIsbnSearchPending] = useState(false);
   const [allShelves, setAllShelves] = useState<ShelfData[]>([]);
   const libraryContext = useContext(LibraryContext);
+  const [customFormStatusMessage, setCustomFormStatusMessage] = useState<StatusMessage>({
+    message: '',
+    status: 'error'
+  });
 
   const fields = {
     name: useFormInput(''),
@@ -55,11 +59,17 @@ export default function BookForm({
   }, [editMode, book]);
 
   useEffect(() => {
+    setCustomFormStatusMessage({
+      message: '',
+      status: 'error'
+    });
+
     resetFormWhenSent();
+    updateShelvesLibraryContext();
 
     (async () => {
-      await uploadBookCover();
-      updateLibraryContext();
+      const coverUrl = await uploadBookCover();
+      updateCoverLibraryContext(coverUrl);
     })();
   }, [state]);
 
@@ -80,22 +90,30 @@ export default function BookForm({
     })();
   }, []);
 
-  const uploadBookCover = async () => {
+  const uploadBookCover = async (): Promise<string> => {
     if('id' in state && state.id && fields.uploadedFile.value !== null) {
       const formData = new FormData();
       formData.append('id', state.id.toString());
       formData.append('file', fields.uploadedFile.value);
 
       const coverUploadData = await uploadCover(null, formData);
-      console.log(coverUploadData);
 
       if(!('message' in coverUploadData)) {
         if(editMode) {
           fields.imageUrl.setValue(coverUploadData.imageUrl);
           fields.uploadCoverFromURL.setValue(true);
+          return coverUploadData.imageUrl;
         }
+      } else {
+        const formStatusMessage = {...customFormStatusMessage};
+        formStatusMessage.message = coverUploadData.message;
+        formStatusMessage.status = 'error';
+
+        setCustomFormStatusMessage(formStatusMessage);
       }
     }
+
+    return '';
   };
 
   const resetFormWhenSent = () => {
@@ -108,7 +126,7 @@ export default function BookForm({
     }
   };
 
-  const updateLibraryContext = () => {
+  const updateShelvesLibraryContext = () => {
     if(libraryContext.value && 'id' in state && state.id) {
       const shelves = [...libraryContext.value];
       if(editMode) {
@@ -147,6 +165,22 @@ export default function BookForm({
       libraryContext.setValue(shelves);
     }
   };
+
+  const updateCoverLibraryContext = (coverUrl: string) => {
+    if(libraryContext.value && 'id' in state && state.id && coverUrl.length > 0) {
+      const shelves = [...libraryContext.value];
+
+      for(const shelf of shelves) {
+        for(const book of shelf.books) {
+          if(book.id === state.id) {
+            book.imageUrl = coverUrl;
+          }
+        }
+      }
+
+      libraryContext.setValue(shelves);
+    };
+  }
 
   const fillDetailsByISBN = () => {
     (async () => {
@@ -344,7 +378,9 @@ export default function BookForm({
             "Book has been edited successfully."
             :
             "Book has been added successfully."
-        } />
+        }
+        customMessage={customFormStatusMessage}
+      />
     </div>
   );
 }

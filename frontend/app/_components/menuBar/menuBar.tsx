@@ -7,49 +7,59 @@ import { IoLibrary } from "react-icons/io5";
 import {Modal, ModalBody, ModalContent, Tooltip} from "@heroui/react";
 import LogoutIcon from "./logoutIcon";
 import {ReactNode, useState} from "react";
-import ShelfForm from "../shelfForm/shelfForm";
+import Link from "next/link";
 
 export default function MenuBar() {
   const [showPopupBox, setShowPopupBox] = useState(false);
   const [popupContent, setPopupContent] = useState<ReactNode>(null);
 
   return (
-    <div className="w-[75px] h-screen shadow-lg bg-primary sticky top-0 text-white flex flex-col items-center justify-center">
-      <div className="max-w-ps w-full h-full flex flex-col py-8 justify-start items-center gap-8">
-        <div>
+    <div className="w-full md:w-[75px] h-[75px] md:h-screen shadow-lg bg-primary fixed md:sticky bottom-0 md:top-0 text-white flex flex-col items-center justify-center z-50">
+      <div className="max-w-ps w-full h-full flex flex-row md:flex-col px-4 md:px-0 py-0 md:py-8 justify-start items-center gap-8">
+        <div className="hidden md:block">
           <BarAvatar />                
         </div>
 
-        <div className="flex-1 flex flex-col items-center gap-4">
+        <div className="flex-1 flex flex-row md:flex-col items-center justify-between md:justify-start gap-4">
           <Tooltip content="Library" placement="right">
-            <IoLibrary className="text-3xl cursor-pointer" />
+            <Link href="/dashboard">
+              <div className="flex flex-col items-center gap-1">
+                <IoLibrary className="text-2xl md:text-3xl cursor-pointer" />
+                <p className="text-sm block md:hidden">Library</p>
+              </div>
+            </Link>
           </Tooltip>
 
           <Tooltip content="Add new" placement="right">
-            <div>
+            <div className="flex flex-col items-center gap-1">
               <CreateBox
                 setShowPopupBox={setShowPopupBox}
                 setPopupContent={setPopupContent}
               />
+              <p className="text-sm block md:hidden">Add</p>
             </div>
           </Tooltip>
 
-          <div className="mt-auto flex flex-col gap-4">
-            <Tooltip content="Account settings" placement="right">
+          <Tooltip
+            content="Account settings"
+            placement="right">
+            <div className="flex flex-col items-center gap-1 mt-0 md:mt-auto">
               <IoMdSettings
-                className="text-3xl cursor-pointer"
+                className="text-2xl md:text-3xl cursor-pointer"
                 onClick={_ => setShowPopupBox(true)}/>
-            </Tooltip>
+              <p className="text-sm block md:hidden">Settings</p>
+            </div>
+          </Tooltip>
 
-            <Tooltip
-              color="danger"
-              content="Log out"
-              placement="right">
-              <div>
-                <LogoutIcon />
-              </div>
-            </Tooltip>
-          </div>
+          <Tooltip
+            color="danger"
+            content="Log out"
+            placement="right">
+            <div className="flex flex-col items-center gap-1">
+              <LogoutIcon />
+              <p className="text-sm block md:hidden">Log out</p>
+            </div>
+          </Tooltip>
         </div>
       </div>
 

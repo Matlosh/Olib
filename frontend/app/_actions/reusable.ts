@@ -29,13 +29,17 @@ export async function apiFetch<T = ApiResponse>(
 
     if(body && stringifyBody) {
       requestInit.body = JSON.stringify(body); 
+    } else {
+      requestInit.body = body;
     }
 
     if(['POST', 'PUT', 'PATCH'].includes(method)) {
-      requestInit.headers = {
-        'Content-Type': 'application/json',
-        ...requestInit.headers
-      };
+      if(stringifyBody) {
+        requestInit.headers = {
+          'Content-Type': 'application/json',
+          ...requestInit.headers
+        };
+      }
     }
 
     const response = await fetch(url, requestInit);

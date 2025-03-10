@@ -20,7 +20,7 @@ export default function CreateBox({
     <div>
       <Dropdown>
         <DropdownTrigger>
-          <HiMiniPlus className="text-4xl cursor-pointer" />
+          <HiMiniPlus className="text-2xl md:text-4xl cursor-pointer" />
         </DropdownTrigger>
 
         <DropdownMenu>

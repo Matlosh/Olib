@@ -26,7 +26,7 @@ export default function LogoutIcon() {
 
   return (
     <ImExit
-      className="text-3xl cursor-pointer"
+      className="text-2xl md:text-3xl cursor-pointer"
       onClick={logout}
       />
   );

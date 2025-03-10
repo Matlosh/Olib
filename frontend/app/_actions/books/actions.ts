@@ -92,14 +92,11 @@ export async function getBookDataByISBN(isbn: string) {
 export async function uploadCover(prevState: any, formData: FormData): Promise<ApiResponse | CoverData> {
   const bookId = formData.get('id');
 
-  // TODO: Fix backend not approving of request error
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/books/${bookId}/cover/upload`,
     'POST',
-    {
-      'Content-Type': 'multipart/form-data'
-    },
+    {},
     formData,
     false
   );
