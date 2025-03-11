@@ -9,12 +9,14 @@ import useFormInput from "@/app/_hooks/useFormInput";
 
 type ShelfFormProps = {
   editMode?: boolean,
-  shelf?: ShelfData
+  shelf?: ShelfData,
+  setShelf?: (shelf: ShelfData) => void
 };
 
 export default function ShelfForm({
   editMode = false,
-  shelf
+  shelf,
+  setShelf
 }: ShelfFormProps) {
   const [state, formAction, pending] = useActionState(editMode ? editShelf : addShelf, apiInitialState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -24,8 +26,12 @@ export default function ShelfForm({
   };
 
   useEffect(() => {
-    if('id' in state && state.id && formRef.current) {
+    if(!editMode && 'id' in state && state.id && formRef.current) {
       formRef.current.reset();
+    }
+
+    if(setShelf && 'id' in state && state.id && formRef.current) {
+      setShelf(state); 
     }
   }, [state]);
 
@@ -47,12 +53,18 @@ export default function ShelfForm({
 
       <Form
         action={formAction}
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           startTransition(() => formAction(new FormData(e.currentTarget)));
         }}
         ref={formRef}>
+        {editMode && shelf && shelf.id &&
+          <input
+            type="hidden"
+            name="id"
+            value={shelf.id.toString()} /> 
+        }
 
         <Input
           isRequired
@@ -66,7 +78,7 @@ export default function ShelfForm({
         /> 
 
         <Button type="submit" color="primary">
-          Add
+          {editMode ? "Edit" : "Add" }
         </Button>
       </Form>
 

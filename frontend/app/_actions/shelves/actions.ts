@@ -19,7 +19,7 @@ export async function getShelfBooks(shelfId: number, page: number): Promise<ApiR
   );
 }
 
-export async function addShelf(prevState: any, formData: FormData) {
+export async function addShelf(prevState: any, formData: FormData): Promise<ApiResponse | ShelfData> {
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/shelves/add`,
@@ -29,7 +29,7 @@ export async function addShelf(prevState: any, formData: FormData) {
   );
 }
 
-export async function editShelf(prevState: any, formData: FormData) {
+export async function editShelf(prevState: any, formData: FormData): Promise<ApiResponse | ShelfData> {
   return await apiFetch(
     async (json) => json,
     `${process.env.BACKEND_URL}/shelves/edit`,

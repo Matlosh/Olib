@@ -33,7 +33,7 @@ export async function apiFetch<T = ApiResponse>(
       requestInit.body = body;
     }
 
-    if(['POST', 'PUT', 'PATCH'].includes(method)) {
+    if(['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       if(stringifyBody) {
         requestInit.headers = {
           'Content-Type': 'application/json',

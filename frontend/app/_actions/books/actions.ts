@@ -19,6 +19,14 @@ export async function getBookShelves(bookId: number) {
   );
 }
 
+export async function getBooksByName(name: string): Promise<ApiResponse | BookData[]> {
+  return await apiFetch(
+    async (json) => json,
+    `${process.env.BACKEND_URL}/books/${name}?limit=5`,
+    'GET'
+  );
+}
+
 export async function addBook(prevState: any, formData: FormData): Promise<ApiResponse | BookData> {
   let body = Object.fromEntries(formData);
   prepareBody(body, formData);
@@ -45,7 +53,7 @@ export async function editBook(prevState: any, formData: FormData): Promise<ApiR
   );
 }
 
-export async function deleteBook(prevState: any, formData: FormData) {
+export async function deleteBook(prevState: any, formData: FormData): Promise<ApiResponse> {
   const deleteId = formData.get('id');
 
   return await apiFetch(
@@ -66,7 +74,6 @@ export async function attachBook(prevState: any, formData: FormData) {
 }
 
 export async function detachBook(prevState: any, formData: FormData) {
-  // TODO: Fix backend not approving of request error
   let body = Object.fromEntries(formData) as {[key: string]: any};
   prepareBody(body, formData);
 

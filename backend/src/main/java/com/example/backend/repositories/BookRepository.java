@@ -14,5 +14,6 @@ import java.util.Set;
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findAllByBookShelves(Shelf shelf, Pageable pageable);
+    List<Book> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
 
 }

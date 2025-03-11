@@ -44,6 +44,13 @@ public class BookController {
         return bookService.getBookShelves(id, request);
     }
 
+    // Fetches all books with the given name (books that the user can access)
+    @GetMapping("/books/{name}")
+    public Set<BookData> searchBooks(@PathVariable String name, @RequestParam("limit") Integer limit, HttpServletRequest request) {
+        userService.authenticate(request);
+        return bookService.searchBooks(name, limit, request);
+    }
+
     @PostMapping("/books/add")
     public BookData addBook(@Validated @RequestBody BookAddForm bookAddForm, HttpServletRequest request) {
         userService.authenticate(request);

@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
@@ -266,5 +268,18 @@ public class BookService {
 
         Set<Shelf> shelves = shelfRepository.findAllByBooks(optionalBook.get());
         return shelves.stream().map(ShelfData::new).collect(Collectors.toSet());
+    }
+
+    public Set<BookData> searchBooks(String name, Integer limit, HttpServletRequest request) {
+        if(name.trim().isEmpty()) {
+            throw new BadRequestException("Name cannot be empty.");
+        }
+
+        if(limit < 1) {
+            throw new BadRequestException("Limit cannot be smaller than 1.");
+        }
+
+        List<Book> books = bookRepository.findAllByNameContainingIgnoreCase(name, PageRequest.of(0, limit, Sort.by("id").descending()));
+        return books.stream().map(BookData::new).collect(Collectors.toSet());
     }
 }

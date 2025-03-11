@@ -12,7 +12,10 @@ export type LibaryContextType = {
   setValue: (value: ShelfData[]) => void
 };
 
-export const LibraryContext = createContext<LibaryContextType>([]);
+export const LibraryContext = createContext<LibaryContextType>({
+  value: [],
+  setValue: (value: ShelfData[]) => {}
+});
 
 export function LibraryProvider({
   children,

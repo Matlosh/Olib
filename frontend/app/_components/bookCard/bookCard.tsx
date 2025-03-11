@@ -58,7 +58,9 @@ export default function BookCard({
               <ModalBody>
                 <BookInfoCard
                   book={book}
-                  shelf={shelf} /> 
+                  shelf={shelf}
+                  onBookDelete={_ => setIsInfoBoxOpened(false)}
+                  /> 
               </ModalBody>
             </>
           )}

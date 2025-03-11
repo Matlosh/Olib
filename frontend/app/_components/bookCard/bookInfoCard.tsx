@@ -1,24 +1,29 @@
 'use client';
 
-import {Button, Card, CardBody, CardHeader, Image, Modal, ModalBody, ModalContent, ModalHeader, Tooltip} from "@heroui/react";
+import {Button, Card, CardBody, CardHeader, Image, Modal, ModalBody, ModalContent, ModalHeader, Tooltip, addToast} from "@heroui/react";
 import Stars from "../stars/stars";
-import {excerptString, getImageFullUrl} from "@/app/_utils/reusable";
+import {getImageFullUrl} from "@/app/_utils/reusable";
 import {useContext, useState} from "react";
-import ShelfForm from "../shelfForm/shelfForm";
 import BookForm from "../bookForm/bookForm";
-import {detachBook} from "@/app/_actions/books/actions";
+import {deleteBook, detachBook} from "@/app/_actions/books/actions";
 import {LibraryContext} from "@/app/_providers/libraryProvider";
+import AcceptRejectModal from "../acceptRejectModal/acceptRejectModal";
 
 type BookInfoCardProps = {
   book: BookData,
-  shelf: ShelfData
+  shelf: ShelfData,
+  onBookRemoveFromShelf?: (book: BookData, shelf: ShelfData) => void,
+  onBookDelete?: (book: BookData) => void
 }
 
 export default function BookInfoCard({
   book,
-  shelf
+  shelf,
+  onBookRemoveFromShelf,
+  onBookDelete
 }: BookInfoCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const libraryContext = useContext(LibraryContext);
 
   const detachBookFromShelf = () => {
@@ -27,15 +32,60 @@ export default function BookInfoCard({
       formData.append('bookId', book.id.toString());
       formData.append('shelves', shelf.id.toString());
 
-      const response = await detachBook(null, formData);
-      console.log(response);
-      if(response.success) {
-        updateLibraryContext();
+      try {
+        const response = await detachBook(null, formData);
+
+        if(response.success) {
+          setIsModalOpen(false);
+          updateShelfRemoveLibraryContext();
+          onBookRemoveFromShelf && onBookRemoveFromShelf(book, shelf);        
+        } else {
+          addToast({
+            title: 'Error',
+            description: 'Something went wrong while removing the book from the shelf. Please try again.',
+            color: 'danger'
+          });
+        }
+      } catch(err) {
+        addToast({
+          title: 'Error',
+          description: 'Internal server error. Please try again.',
+          color: 'danger'
+        });
       }
     })();
   };
 
-  const updateLibraryContext = () => {
+  const removeBook = () => {
+    (async () => {
+      const formData = new FormData();
+      formData.append('id', book.id.toString());
+
+      try {
+        const response = await deleteBook(null, formData);
+
+        if(response.success) {
+          setIsModalOpen(false);
+          updateBookDeleteLibraryContext();
+          onBookDelete && onBookDelete(book);
+        } else {
+          addToast({
+            title: 'Error',
+            description: 'Something went wrong while deleting the book. Please try again.',
+            color: 'danger'
+          });
+        }
+      } catch(err) {
+        addToast({
+          title: 'Error',
+          description: 'Internal server error. Please try again.',
+          color: 'danger'
+        });
+      }        
+    })();
+  };
+
+  const updateShelfRemoveLibraryContext = () => {
     const shelves = [...libraryContext.value];
 
     const matchingShelf = shelves.find(s => s.id === shelf.id);
@@ -43,6 +93,18 @@ export default function BookInfoCard({
       matchingShelf.books = matchingShelf.books.filter(b => b.id !== book.id);
     }
 
+    libraryContext.setValue(shelves);
+  };
+
+  const updateBookDeleteLibraryContext = () => {
+    const shelves = [...libraryContext.value];
+
+    shelves.map(shelf => {
+      const bookIndex = shelf.books.findIndex(book => book.id === book.id);
+      shelf.books.splice(bookIndex, 1);
+      return shelf;
+    });
+    
     libraryContext.setValue(shelves);
   };
 
@@ -81,7 +143,9 @@ export default function BookInfoCard({
               </Button>
             }
 
-            <Button color="danger">
+            <Button
+              color="danger"
+              onPress={_ => setIsAcceptModalOpen(true)}>
               Delete
             </Button>
           </div>
@@ -101,6 +165,13 @@ export default function BookInfoCard({
           )}
         </ModalContent>
       </Modal>
+
+      <AcceptRejectModal
+        isOpen={isAcceptModalOpen} 
+        setIsOpen={setIsAcceptModalOpen}
+        message="Do you really want to delete this book?"
+        onAccept={removeBook}
+      />
     </>
   );
 }
