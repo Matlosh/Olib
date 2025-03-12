@@ -3,6 +3,7 @@ import {getMe} from "@/app/_actions/user/actions";
 import MenuBar from "@/app/_components/menuBar/menuBar";
 import TopBar from "@/app/_components/topBar/topBar";
 import {LibraryProvider} from "@/app/_providers/libraryProvider";
+import MeProvider from "@/app/_providers/meProvider";
 import {redirect} from "next/navigation";
 import React from "react";
 
@@ -21,16 +22,18 @@ export default async function Layout({
 
   return (
     <div className="flex flex-row w-full h-full min-h-screen">
-      <LibraryProvider shelves={!('message' in shelves) ? shelves : []}>
-        <MenuBar />
+      <MeProvider me={me}>
+        <LibraryProvider shelves={!('message' in shelves) ? shelves : []}>
+          <MenuBar />
 
-        <div className="w-full flex flex-col items-center bg-amber-500/5">
-          <div className="w-full px-8 pt-8 pb-[calc(2rem+75px)] md:p-8">
-            <TopBar />
-            {children}
+          <div className="w-full flex flex-col items-center bg-amber-500/5">
+            <div className="w-full px-8 pt-8 pb-[calc(2rem+75px)] md:p-8">
+              <TopBar />
+              {children}
+            </div>
           </div>
-        </div>
-      </LibraryProvider>
+        </LibraryProvider>
+      </MeProvider>
     </div>
   );
 }

@@ -54,7 +54,7 @@ export default function ShelfSegment({
                 <h1 className="text-2xl font-bold text-center">{shelf.name}</h1>
                 <Tooltip content="Edit shelf info">
                   <PiNotePencilBold
-                    className="absolute text-lg top-1/2 -translate-y-[60%] left-[110%] cursor-pointer"
+                    className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+0.5rem)] cursor-pointer"
                     onClick={_ => setIsModalOpen(true)} />
                 </Tooltip>
               </> 
@@ -107,7 +107,9 @@ export default function ShelfSegment({
 
       <Modal
         isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}>
+        onOpenChange={setIsModalOpen}
+        placement="center"
+        scrollBehavior="inside">
         <ModalContent>
           {(onClose) => (
             <ModalBody>

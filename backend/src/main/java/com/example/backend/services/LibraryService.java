@@ -1,5 +1,6 @@
 package com.example.backend.services;
 
+import com.example.backend.data.LibraryData;
 import com.example.backend.exceptions.ForbiddenException;
 import com.example.backend.exceptions.NotFoundException;
 import com.example.backend.forms.LibraryForm;
@@ -43,9 +44,14 @@ public class LibraryService {
         }
     }
 
-    public void editLibrary(LibraryForm libraryForm, HttpServletRequest request) {
+    public Library editLibrary(LibraryForm libraryForm, HttpServletRequest request) {
         Library library = getUserLibrary(request);
         library.setPublic(libraryForm.isPublic());
-        libraryRepository.save(library);
+        return libraryRepository.save(library);
+    }
+
+    public LibraryData getUserLibraryData(HttpServletRequest request) {
+        Library library = getUserLibrary(request);
+        return new LibraryData(library);
     }
 }

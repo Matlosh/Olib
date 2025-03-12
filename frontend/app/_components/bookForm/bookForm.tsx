@@ -52,7 +52,8 @@ export default function BookForm({
       fields.isScored.setValue(book.scored);
       fields.shelves.setValue(book.shelvesIds);
       
-      if(fields.imageUrl.value.trim().length > 0) {
+      if(book.imageUrl.trim().length > 0) {
+        fields.imageUrl.setValue(book.imageUrl);
         fields.uploadCoverFromURL.setValue(true);
       }
     }
@@ -230,7 +231,7 @@ export default function BookForm({
   };
 
   return (
-    <div className="flex flex-col gap-2 pt-2">
+    <div className="flex flex-col gap-2 pt-2 overflow-scroll">
       <h1 className="text-xl font-bold">
         {editMode ?
           'Edit an existing book'

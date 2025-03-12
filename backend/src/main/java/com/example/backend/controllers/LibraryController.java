@@ -1,6 +1,7 @@
 package com.example.backend.controllers;
 
 import com.example.backend.data.BookData;
+import com.example.backend.data.LibraryData;
 import com.example.backend.data.ShelfData;
 import com.example.backend.forms.LibraryForm;
 import com.example.backend.responses.BaseResponse;
@@ -28,6 +29,12 @@ public class LibraryController {
         this.userService = userService;
     }
 
+    @GetMapping("/library")
+    public LibraryData getUserLibrary(HttpServletRequest request) {
+        userService.authenticate(request);
+        return libraryService.getUserLibraryData(request);
+    }
+
     // Public library fetching equals to fetching all the shelves
     @GetMapping("/libraries/{id}")
     public Set<ShelfData> getLibrary(@PathVariable Long id) {
@@ -42,9 +49,8 @@ public class LibraryController {
     }
 
     @PutMapping("/libraries/edit")
-    public BaseResponse editLibrary(@Validated @RequestBody LibraryForm libraryForm, HttpServletRequest request) {
+    public LibraryData editLibrary(@Validated @RequestBody LibraryForm libraryForm, HttpServletRequest request) {
         userService.authenticate(request);
-        libraryService.editLibrary(libraryForm, request);
-        return new BaseResponse(true, 200, "Library was edited.");
+        return new LibraryData(libraryService.editLibrary(libraryForm, request));
     }
 }

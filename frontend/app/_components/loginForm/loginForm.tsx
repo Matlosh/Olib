@@ -17,7 +17,7 @@ export default function LoginForm() {
   }, [state]);
 
   return (
-    <Card className="p-4 w-full max-w-[500px] flex flex-col items-center justify-center">
+    <Card className="p-4 w-[calc(100%-2rem)] md:w-full max-w-[500px] flex flex-col items-center justify-center">
       <h1 className="text-2xl font-bold mb-4">Login</h1>
 
       <Form

@@ -18,7 +18,7 @@ export default function RegisterForm() {
   }, [state]);
 
   return (
-    <Card className="p-4 w-full max-w-[500px] flex flex-col items-center justify-center gap-2">
+    <Card className="p-4 w-[calc(100%-2rem)] md:w-full max-w-[500px] flex flex-col items-center justify-center gap-2">
       <h1 className="text-2xl font-bold mb-4">Create an account</h1>
 
       <Form

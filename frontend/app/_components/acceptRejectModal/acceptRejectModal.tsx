@@ -20,7 +20,8 @@ export default function AcceptRejectModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={setIsOpen}>
+      onOpenChange={setIsOpen}
+      placement="center">
       <ModalContent>
         {(onClose) => (
           <>

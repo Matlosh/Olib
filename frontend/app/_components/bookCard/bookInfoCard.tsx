@@ -154,10 +154,13 @@ export default function BookInfoCard({
 
       <Modal
         isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}>
+        onOpenChange={setIsModalOpen}
+        placement="center"
+        scrollBehavior="inside">
         <ModalContent>
           {(onClose) => (
-            <ModalBody>
+            <ModalBody
+            className="overflow-scroll">
               <BookForm
                 editMode
                 book={book} />

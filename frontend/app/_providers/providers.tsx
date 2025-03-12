@@ -9,7 +9,11 @@ export function Providers({ me, children }: { me: UserData | undefined, children
   return (
     <HeroUIProvider>
       <MeContext.Provider value={me}>
-        <ToastProvider />
+        <ToastProvider
+          regionProps={{
+            className: 'z-[60]'
+          }}   
+        />
         {children}
       </MeContext.Provider>
     </HeroUIProvider>

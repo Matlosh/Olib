@@ -6,12 +6,27 @@ import { IoMdSettings } from "react-icons/io";
 import { IoLibrary } from "react-icons/io5";
 import {Modal, ModalBody, ModalContent, Tooltip} from "@heroui/react";
 import LogoutIcon from "./logoutIcon";
-import {ReactNode, useState} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import Link from "next/link";
+import { getUserLibrary } from "@/app/_actions/libraries/actions";
+import SettingsForm from "../settingsForm/settingsForm";
 
 export default function MenuBar() {
   const [showPopupBox, setShowPopupBox] = useState(false);
   const [popupContent, setPopupContent] = useState<ReactNode>(null);
+  const [library, setLibrary] = useState<LibraryData | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const libraryData = await getUserLibrary();
+
+        if(!('message' in libraryData)) {
+          setLibrary(libraryData);
+        }
+      } catch(err) {}
+    })();
+  }, []);
 
   return (
     <div className="w-full md:w-[75px] h-[75px] md:h-screen shadow-lg bg-primary fixed md:sticky bottom-0 md:top-0 text-white flex flex-col items-center justify-center z-50">
@@ -43,10 +58,15 @@ export default function MenuBar() {
           <Tooltip
             content="Account settings"
             placement="right">
-            <div className="flex flex-col items-center gap-1 mt-0 md:mt-auto">
+            <div className="flex flex-col items-center gap-1 mt-0 md:mt-auto"
+              onClick={() => {
+                if(library !== null) {
+                  setPopupContent(<SettingsForm library={library} setLibrary={setLibrary} />);
+                  setShowPopupBox(true);
+                }
+              }}>
               <IoMdSettings
-                className="text-2xl md:text-3xl cursor-pointer"
-                onClick={_ => setShowPopupBox(true)}/>
+                className="text-2xl md:text-3xl cursor-pointer" />
               <p className="text-sm block md:hidden">Settings</p>
             </div>
           </Tooltip>
@@ -66,7 +86,8 @@ export default function MenuBar() {
       <Modal
         isOpen={showPopupBox}
         size="xl"
-        onClose={() => setShowPopupBox(false)}>
+        onClose={() => setShowPopupBox(false)}
+        placement="center">
         <ModalContent>
           {(onClose) => (
             <ModalBody>

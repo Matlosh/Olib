@@ -26,3 +26,8 @@ type ShelfData = {
 type CoverData = {
   imageUrl: string
 };
+
+type LibraryData = {
+  id: number,
+  public: boolean
+};

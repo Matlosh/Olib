@@ -26,12 +26,6 @@ export default function ShelfCard({
     <div className="w-full h-auto flex flex-col justify-end pt-11">
       <div className="pb-8 w-full flex flex-row justify-center">
         <h1 className="text-2xl font-bold text-center">{shelf.name}</h1>
-
-        {/*
-        <Tooltip content="Edit shelf info" placement="right">
-          <BsPencilSquare className="text-2xl text-primary ml-2" /> 
-        </Tooltip>
-        */}
       </div>
 
       <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-0">
@@ -44,9 +38,10 @@ export default function ShelfCard({
         {isLastALink &&
           <div className="w-full md:w-[100px] md:h-[200px] flex items-center justify-center">
             <div className="block md:hidden">
-              <Link href={"/dashboard/shelves/" + shelf.id}>
-                <Button color="primary">See all</Button>
-              </Link>
+              <Button
+                color="primary"
+                as={Link}
+                href={"/dashboard/shelves/" + shelf.id}>See all</Button>
             </div>
 
             <div className="w-full h-full hidden md:flex items-center justify-center">

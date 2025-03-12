@@ -51,7 +51,8 @@ export default function BookCard({
         isOpen={isInfoBoxOpened}
         onClose={() => setIsInfoBoxOpened(false)}
         size="3xl"
-        placement="center">
+        placement="center"
+        scrollBehavior="inside">
         <ModalContent>
           {(onClose) => (
             <>
