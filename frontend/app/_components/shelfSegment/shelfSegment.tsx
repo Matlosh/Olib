@@ -3,9 +3,15 @@
 import {LibraryContext} from "@/app/_providers/libraryProvider";
 import {useContext, useEffect, useState} from "react";
 import BookCard from "../bookCard/bookCard";
-import { Modal, ModalBody, ModalContent, Skeleton, Tooltip } from "@heroui/react";
+import { Modal, ModalBody, ModalContent, Skeleton, Tooltip, addToast } from "@heroui/react";
 import { PiNotePencilBold } from "react-icons/pi";
 import ShelfForm from "../shelfForm/shelfForm";
+import BooksProvider, { BooksContext } from "@/app/_providers/booksProvider";
+import { RiDeleteBinFill } from "react-icons/ri";
+import AcceptRejectModal from "../acceptRejectModal/acceptRejectModal";
+import { updateShelfLibraryContext } from "@/app/_helpers/contexts/library";
+import { deleteShelf } from "@/app/_actions/shelves/actions";
+import { useRouter } from "next/navigation";
 
 // First page should be already provided to prevent loading at start
 type ShelfSegmentProps = {
@@ -22,6 +28,8 @@ export default function ShelfSegment({
   const [books, setBooks] = useState(firstPageBooks);
   const libraryContext = useContext(LibraryContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const shelf = libraryContext.value.find(shelf => shelf.id === Number(id)); 
@@ -33,17 +41,33 @@ export default function ShelfSegment({
     setIsLoaded(true);
   }, [id]);
 
-  const updateShelfLibraryContext = (newShelf: ShelfData) => {
-    const shelves = [...libraryContext.value];
-    const shelfIndex = shelves.findIndex(shelf => shelf.id === newShelf.id);
+  const deleteThisShelf = () => {
+    (async () => {
+      const formData = new FormData();
+      formData.append('id', id);
 
-    if(shelfIndex > 0) {
-      shelves[shelfIndex] = newShelf;
-    }
+      let isSuccess = false;
 
-    libraryContext.setValue(shelves);
+      try {
+        const response = await deleteShelf(null, formData);
+
+        if(response.success) {
+          isSuccess = true;
+        }
+      } catch(err) {}
+
+      if(isSuccess) {
+        router.push('/dashboard');
+      } else {
+        addToast({
+          title: 'Error',
+          description: 'Could not delete this shelf. Please try again.',
+          color: 'danger'
+        });
+      }
+    })();
   };
-
+  
   return (
     <div>
       <div className="flex flex-col py-8 items-center gap-8">
@@ -57,6 +81,13 @@ export default function ShelfSegment({
                     className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+0.5rem)] cursor-pointer"
                     onClick={_ => setIsModalOpen(true)} />
                 </Tooltip>
+
+                <Tooltip content="Delete shelf" color="danger">
+                  <RiDeleteBinFill
+                    className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+2rem)] cursor-pointer text-red-500"
+                    onClick={_ => setIsAcceptModalOpen(true)} />
+                </Tooltip>
+
               </> 
             }
 
@@ -79,14 +110,18 @@ export default function ShelfSegment({
         </div>
 
         <div className="w-full md:w-auto grid grid-cols-1 md:grid-cols-4 gap-8 justify-center">
-          {isLoaded && shelf &&
+          <BooksProvider books={books} setBooks={setBooks}>
             <>
-              {books.map((book, i) => (
-                <BookCard key={i} book={book} shelf={shelf} />
-              ))}
+              {isLoaded && shelf &&
+                <>
+                  {books.map((book, i) => (
+                    <BookCard key={i} book={book} shelf={shelf} />
+                  ))}
+                </>
+              }
             </>
-          }
-
+          </BooksProvider>
+          
           {!isLoaded &&
             <>
               {Array.from(Array(12).keys()).map(i => (
@@ -118,12 +153,19 @@ export default function ShelfSegment({
                 shelf={shelf !== null ? shelf : undefined}
                 setShelf={shelf => {
                   setShelf(shelf);
-                  updateShelfLibraryContext(shelf);                  
+                  updateShelfLibraryContext(libraryContext, shelf);
                 }}/>
             </ModalBody>
           )}
         </ModalContent>
       </Modal>
+
+      <AcceptRejectModal
+        isOpen={isAcceptModalOpen}
+        setIsOpen={setIsAcceptModalOpen}
+        message="Do you really want to remove this shelf (Books won't be deleted)?"
+        onAccept={deleteThisShelf}
+        onReject={() => setIsAcceptModalOpen(false)} />
     </div>
   );
 }

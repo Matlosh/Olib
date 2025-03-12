@@ -10,6 +10,7 @@ import {ReactNode, useEffect, useState} from "react";
 import Link from "next/link";
 import { getUserLibrary } from "@/app/_actions/libraries/actions";
 import SettingsForm from "../settingsForm/settingsForm";
+import { BsBarChartFill } from "react-icons/bs";
 
 export default function MenuBar() {
   const [showPopupBox, setShowPopupBox] = useState(false);
@@ -44,6 +45,16 @@ export default function MenuBar() {
               </div>
             </Link>
           </Tooltip>
+
+          <Tooltip content="Stats" placement="right">
+            <Link href="/dashboard/stats">
+              <div className="flex flex-col items-center gap-1">
+                <BsBarChartFill className="text-2xl md:text-3xl cursor-pointer" />
+                <p className="text-sm block md:hidden">Stats</p>
+              </div>
+            </Link>
+          </Tooltip>
+
 
           <Tooltip content="Add new" placement="right">
             <div className="flex flex-col items-center gap-1">

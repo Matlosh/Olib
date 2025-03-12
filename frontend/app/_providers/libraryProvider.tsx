@@ -7,12 +7,12 @@ type LibraryProviderProps = {
   shelves: ShelfData[]
 };
 
-export type LibaryContextType = {
+export type LibraryContextType = {
   value: ShelfData[],
   setValue: (value: ShelfData[]) => void
 };
 
-export const LibraryContext = createContext<LibaryContextType>({
+export const LibraryContext = createContext<LibraryContextType>({
   value: [],
   setValue: (value: ShelfData[]) => {}
 });

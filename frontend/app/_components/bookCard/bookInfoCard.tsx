@@ -8,6 +8,9 @@ import BookForm from "../bookForm/bookForm";
 import {deleteBook, detachBook} from "@/app/_actions/books/actions";
 import {LibraryContext} from "@/app/_providers/libraryProvider";
 import AcceptRejectModal from "../acceptRejectModal/acceptRejectModal";
+import { BooksContext } from "@/app/_providers/booksProvider";
+import { updateBookDeleteLibraryContext, updateBooksLibraryContext, updateCoverLibraryContext, updateShelfBookRemoveLibraryContext, updateShelvesLibraryContext } from "@/app/_helpers/contexts/library";
+import { updateBooksContext } from "@/app/_helpers/contexts/books";
 
 type BookInfoCardProps = {
   book: BookData,
@@ -25,6 +28,7 @@ export default function BookInfoCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const libraryContext = useContext(LibraryContext);
+  const booksContext = useContext(BooksContext);
 
   const detachBookFromShelf = () => {
     (async () => {
@@ -37,7 +41,7 @@ export default function BookInfoCard({
 
         if(response.success) {
           setIsModalOpen(false);
-          updateShelfRemoveLibraryContext();
+          updateShelfBookRemoveLibraryContext(libraryContext, shelf, book);
           onBookRemoveFromShelf && onBookRemoveFromShelf(book, shelf);        
         } else {
           addToast({
@@ -66,7 +70,7 @@ export default function BookInfoCard({
 
         if(response.success) {
           setIsModalOpen(false);
-          updateBookDeleteLibraryContext();
+          updateBookDeleteLibraryContext(libraryContext, book);
           onBookDelete && onBookDelete(book);
         } else {
           addToast({
@@ -83,29 +87,6 @@ export default function BookInfoCard({
         });
       }        
     })();
-  };
-
-  const updateShelfRemoveLibraryContext = () => {
-    const shelves = [...libraryContext.value];
-
-    const matchingShelf = shelves.find(s => s.id === shelf.id);
-    if(matchingShelf) {
-      matchingShelf.books = matchingShelf.books.filter(b => b.id !== book.id);
-    }
-
-    libraryContext.setValue(shelves);
-  };
-
-  const updateBookDeleteLibraryContext = () => {
-    const shelves = [...libraryContext.value];
-
-    shelves.map(shelf => {
-      const bookIndex = shelf.books.findIndex(book => book.id === book.id);
-      shelf.books.splice(bookIndex, 1);
-      return shelf;
-    });
-    
-    libraryContext.setValue(shelves);
   };
 
   return (
@@ -163,7 +144,15 @@ export default function BookInfoCard({
             className="overflow-scroll">
               <BookForm
                 editMode
-                book={book} />
+                book={book}
+                onBookSave={(nextBook: BookData) => {
+                  updateBooksContext(booksContext, nextBook);
+                  updateShelvesLibraryContext(libraryContext, book, nextBook, true);
+                  updateBooksLibraryContext(libraryContext, nextBook);
+                }}
+                onBookCoverSave={(nextBook: BookData) => {
+                  updateCoverLibraryContext(libraryContext, nextBook, nextBook.imageUrl);
+                }} />
             </ModalBody>
           )}
         </ModalContent>

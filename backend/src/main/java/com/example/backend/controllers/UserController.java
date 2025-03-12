@@ -1,5 +1,6 @@
 package com.example.backend.controllers;
 
+import com.example.backend.data.StatsData;
 import com.example.backend.data.UserData;
 import com.example.backend.forms.LoginForm;
 import com.example.backend.forms.RegisterForm;
@@ -43,5 +44,11 @@ public class UserController {
     public UserData getMe(HttpServletRequest request) {
         userService.authenticate(request);
         return userService.getMe(request);
+    }
+
+    @GetMapping("/user/stats")
+    public StatsData getUserStats(HttpServletRequest request) {
+        userService.authenticate(request);
+        return userService.getUserStats(request);
     }
 }

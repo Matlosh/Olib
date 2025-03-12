@@ -1,5 +1,8 @@
 package com.example.backend.services;
 
+import com.example.backend.data.CalculatedStatsData;
+import com.example.backend.data.ScoreData;
+import com.example.backend.data.StatsData;
 import com.example.backend.data.UserData;
 import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.ForbiddenException;
@@ -126,5 +129,16 @@ public class UserService {
         }
 
         return user.get();
+    }
+
+    public StatsData getUserStats(HttpServletRequest request) {
+        User user = getUser(request);
+        CalculatedStatsData calculatedStatsData = userRepository.findStats(user.getId());
+        List<ScoreData> scoreDataList = userRepository.findAllScores(user.getId());
+
+        StatsData statsData = new StatsData(calculatedStatsData);
+        statsData.setScores(scoreDataList);
+
+        return statsData;
     }
 }

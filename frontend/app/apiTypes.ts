@@ -31,3 +31,15 @@ type LibraryData = {
   id: number,
   public: boolean
 };
+
+type ScoreData = {
+  score: number,
+  count: number
+};
+
+type StatsData = {
+  booksCount: number,
+  shelvesCount: number,
+  averageScore: number,
+  scores: ScoreData[]
+};

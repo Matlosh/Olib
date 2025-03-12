@@ -51,3 +51,11 @@ export async function getMe(): Promise<ApiResponse | UserData> {
     'GET'
   );
 }
+
+export async function getUserStats() {
+  return await apiFetch<StatsData>(
+    async (json) => json,
+    `${process.env.BACKEND_URL}/user/stats`,
+    'GET'
+  );
+}

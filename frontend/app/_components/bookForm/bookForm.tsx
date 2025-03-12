@@ -8,17 +8,22 @@ import FormStatus, {StatusMessage} from "../formStatus/formStatus";
 import {addBook, editBook, getBookDataByISBN, getBookShelves, uploadCover} from "@/app/_actions/books/actions";
 import useFormInput from "@/app/_hooks/useFormInput";
 import {LibraryContext} from "@/app/_providers/libraryProvider";
+import { updateCoverLibraryContext, updateShelvesLibraryContext } from "@/app/_helpers/contexts/library";
 
 type BookFormProps = {
   editMode?: boolean,
-  book?: BookData
+  book?: BookData,
+  onBookSave?: (book: BookData) => void,
+  onBookCoverSave?: (book: BookData) => void
 };
 
 type BookStringKeys = 'name' | 'author' | 'isbn' | 'imageUrl';
 
 export default function BookForm({
   editMode = false,
-  book
+  book,
+  onBookSave,
+  onBookCoverSave
 }: BookFormProps) {
   const [state, formAction, pending] = useActionState(editMode ? editBook : addBook, apiInitialState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -66,11 +71,22 @@ export default function BookForm({
     });
 
     resetFormWhenSent();
-    updateShelvesLibraryContext();
+
+    if(!('message' in state)) {
+      onBookSave && onBookSave(state);
+    }
 
     (async () => {
       const coverUrl = await uploadBookCover();
-      updateCoverLibraryContext(coverUrl);
+
+      if(!('message' in state)) {
+        const newBook = {...state};
+        if(coverUrl.length > 0) {
+          newBook.imageUrl = coverUrl;
+        }
+
+        onBookCoverSave && onBookCoverSave(newBook);
+      }
     })();
   }, [state]);
 
@@ -126,62 +142,6 @@ export default function BookForm({
       }
     }
   };
-
-  const updateShelvesLibraryContext = () => {
-    if(libraryContext.value && 'id' in state && state.id) {
-      const shelves = [...libraryContext.value];
-      if(editMode) {
-        if(book) {
-          const oldShelvesIds = book.shelvesIds;
-          const newShelvesIds = fields.shelves.value;
-
-          const shelvesToRemove = oldShelvesIds.filter(id => !newShelvesIds.includes(id));
-          const shelvesToAdd = newShelvesIds.filter(id => !oldShelvesIds.includes(id));
-
-          if(shelvesToRemove.length > 0) {
-            for(const shelf of shelves) {
-              if(shelvesToRemove.includes(shelf.id)) {
-                shelf.books = shelf.books.filter(book => book.id !== state.id);
-              }
-            }
-          }
-
-          if(shelvesToAdd.length > 0) {
-            for(const shelf of shelves) {
-              if(shelvesToAdd.includes(shelf.id)) {
-                shelf.books.push(state);
-              }
-            }
-          }
-
-        }
-      } else {
-        for(const shelf of shelves) {
-          if(fields.shelves.value.includes(shelf.id)) {
-            shelf.books.push(state);
-          }
-        }
-      }
-
-      libraryContext.setValue(shelves);
-    }
-  };
-
-  const updateCoverLibraryContext = (coverUrl: string) => {
-    if(libraryContext.value && 'id' in state && state.id && coverUrl.length > 0) {
-      const shelves = [...libraryContext.value];
-
-      for(const shelf of shelves) {
-        for(const book of shelf.books) {
-          if(book.id === state.id) {
-            book.imageUrl = coverUrl;
-          }
-        }
-      }
-
-      libraryContext.setValue(shelves);
-    };
-  }
 
   const fillDetailsByISBN = () => {
     (async () => {
