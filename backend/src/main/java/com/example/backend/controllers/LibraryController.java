@@ -17,13 +17,11 @@ import java.util.Set;
 public class LibraryController {
 
     private final LibraryService libraryService;
-    private final ShelfService shelfService;
     private final UserService userService;
 
     @Autowired
-    public LibraryController(LibraryService libraryService, ShelfService shelfService, UserService userService) {
+    public LibraryController(LibraryService libraryService, UserService userService) {
         this.libraryService = libraryService;
-        this.shelfService = shelfService;
         this.userService = userService;
     }
 
@@ -47,10 +45,16 @@ public class LibraryController {
         return libraryService.getLibraryStats(id);
     }
 
+    @GetMapping("/libraries/{id}/shelves/{shelfId}")
+    public ShelfData getLibraryShelf(@PathVariable Long id, @PathVariable Long shelfId) {
+        libraryService.verifyLibraryPublic(id);
+        return libraryService.getLibraryShelf(id, shelfId);
+    }
+
     @GetMapping("/libraries/{id}/shelves/{shelfId}/books")
     public Set<BookData> getLibraryShelfBooks(@PathVariable Long id, @PathVariable Long shelfId, @RequestParam("page") Integer page) {
         libraryService.verifyLibraryPublic(id);
-        return shelfService.getShelfBooks(shelfId, page);
+        return libraryService.getLibraryShelfBooks(id, shelfId, page);
     }
 
     @PutMapping("/libraries/edit")

@@ -16,7 +16,7 @@ export default {
         tertiary: 'var(--tertiary)'
       },
       screens: {
-        'ps': '1400px'
+        'ps': '1600px'
       },
       width: {
         'ps': 'var(--ps)'

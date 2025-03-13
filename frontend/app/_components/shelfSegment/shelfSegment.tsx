@@ -12,18 +12,26 @@ import AcceptRejectModal from "../acceptRejectModal/acceptRejectModal";
 import { updateShelfLibraryContext } from "@/app/_helpers/contexts/library";
 import { deleteShelf, getShelfBooks } from "@/app/_actions/shelves/actions";
 import { useRouter } from "next/navigation";
+import { getPublicLibraryShelfBooks } from "@/app/_actions/libraries/actions";
+import { ApiResponse } from "@/app/_utils/reusable";
 
 const SCROLL_LOAD_PERCENT = 80;
 
 // First page should be already provided to prevent loading at start
 type ShelfSegmentProps = {
   id: string,
-  firstPageBooks: BookData[]
+  libraryId?: string,
+  shelfData?: ShelfData,
+  firstPageBooks: BookData[],
+  viewMode?: boolean
 };
 
 export default function ShelfSegment({
   id,
-  firstPageBooks
+  libraryId,
+  shelfData,
+  firstPageBooks,
+  viewMode = false
 }: ShelfSegmentProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [shelf, setShelf] = useState<ShelfData | null>(null);
@@ -39,10 +47,14 @@ export default function ShelfSegment({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
-    const foundShelf = libraryContext.value.find(s => s.id === Number(id)); 
+    if(viewMode && shelfData) {
+      setShelf(shelfData);
+    } else {
+      const foundShelf = libraryContext.value.find(s => s.id === Number(id)); 
 
-    if(foundShelf) {
-      setShelf(foundShelf);
+      if(foundShelf) {
+        setShelf(foundShelf);
+      }
     }
 
     setIsLoaded(true);
@@ -90,7 +102,14 @@ export default function ShelfSegment({
       let isSucess = false;
 
       try {
-        const newBooks = await getShelfBooks(shelf.id, pageRef.current + 1);
+        let newBooks: ApiResponse | BookData[] = [];
+        if(viewMode) {
+          if(libraryId) {
+            newBooks = await getPublicLibraryShelfBooks(Number(libraryId), shelf.id, pageRef.current + 1);
+          }
+        } else {
+          newBooks = await getShelfBooks(shelf.id, pageRef.current + 1);
+        }
 
         if(!('message' in newBooks)) {
           const allBooks = [...booksRef.current];
@@ -155,18 +174,21 @@ export default function ShelfSegment({
             {isLoaded && shelf && 
               <>
                 <h1 className="text-2xl font-bold text-center">{shelf.name}</h1>
-                <Tooltip content="Edit shelf info">
-                  <PiNotePencilBold
-                    className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+0.5rem)] cursor-pointer"
-                    onClick={_ => setIsModalOpen(true)} />
-                </Tooltip>
+                {!viewMode &&
+                  <>
+                    <Tooltip content="Edit shelf info">
+                      <PiNotePencilBold
+                        className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+0.5rem)] cursor-pointer"
+                        onClick={_ => setIsModalOpen(true)} />
+                    </Tooltip>
 
-                <Tooltip content="Delete shelf" color="danger">
-                  <RiDeleteBinFill
-                    className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+2rem)] cursor-pointer text-red-500"
-                    onClick={_ => setIsAcceptModalOpen(true)} />
-                </Tooltip>
-
+                    <Tooltip content="Delete shelf" color="danger">
+                      <RiDeleteBinFill
+                        className="absolute text-lg top-1/2 -translate-y-[60%] left-[calc(100%+2rem)] cursor-pointer text-red-500"
+                        onClick={_ => setIsAcceptModalOpen(true)} />
+                    </Tooltip>
+                  </> 
+                }
               </> 
             }
 
@@ -194,7 +216,7 @@ export default function ShelfSegment({
               {isLoaded && shelf &&
                 <>
                   {books.map((book, i) => (
-                    <BookCard key={i} book={book} shelf={shelf} />
+                    <BookCard key={i} book={book} shelf={shelf} viewMode={viewMode} />
                   ))}
                 </>
               }

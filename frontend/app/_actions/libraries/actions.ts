@@ -26,6 +26,22 @@ export async function getPublicLibraryStats(libraryId: number) {
   );
 }
 
+export async function getPublicLibraryShelf(libraryId: number, shelfId: number) {
+  return await apiFetch<ShelfData>(
+    async (json) => json,
+    `${process.env.BACKEND_URL}/libraries/${libraryId}/shelves/${shelfId}`,
+    'GET'
+  );
+}
+
+export async function getPublicLibraryShelfBooks(libraryId: number, shelfId: number, page: number) {
+  return await apiFetch<BookData[]>(
+    async (json) => json,
+    `${process.env.BACKEND_URL}/libraries/${libraryId}/shelves/${shelfId}/books?page=${page}`,
+    'GET'
+  );
+}
+
 export async function editUserLibrary(prevState: any, formData: FormData) {
   const body = Object.fromEntries(formData) as {[key: string]: any};
   body.public = formData.get('public') === 'true';

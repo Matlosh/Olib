@@ -65,7 +65,7 @@ public class ShelfService {
         Set<ShelfData> shelvesData = new HashSet<>();
 
         for(final Shelf shelf : shelves) {
-            ShelfData shelfData = new ShelfData();
+            ShelfData shelfData = new ShelfData(shelf);
             shelfData.setId(shelf.getId());
             shelfData.setName(shelf.getName());
             shelfData.setBooksCount((long) shelf.getBooks().size());
@@ -139,15 +139,24 @@ public class ShelfService {
     }
 
     public Set<BookData> getShelfBooks(Long id, Integer page) {
+        Shelf shelf = getShelf(id);
+        List<Book> books = bookRepository.findAllByBookShelves(shelf, PageRequest.of(page, 12, Sort.by("id").descending()));
+
+        return books.stream().map(BookData::new).collect(Collectors.toSet());
+    }
+
+    private Shelf getShelf(Long id) {
         Optional<Shelf> optionalShelf = shelfRepository.findById(id);
 
         if(optionalShelf.isEmpty()) {
             throw new MethodNotAllowedException("You do not have access to this resource.");
         }
 
-        Shelf shelf = optionalShelf.get();
-        List<Book> books = bookRepository.findAllByBookShelves(shelf, PageRequest.of(page, 12, Sort.by("id").descending()));
+        return optionalShelf.get();
+    }
 
-        return books.stream().map(BookData::new).collect(Collectors.toSet());
+    public ShelfData getShelfData(Long id) {
+        Shelf shelf = getShelf(id);
+        return new ShelfData(shelf);
     }
 }

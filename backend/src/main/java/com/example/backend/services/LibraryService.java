@@ -1,8 +1,6 @@
 package com.example.backend.services;
 
-import com.example.backend.data.LibraryData;
-import com.example.backend.data.PublicLibraryData;
-import com.example.backend.data.StatsData;
+import com.example.backend.data.*;
 import com.example.backend.exceptions.ForbiddenException;
 import com.example.backend.exceptions.MethodNotAllowedException;
 import com.example.backend.exceptions.NotFoundException;
@@ -28,13 +26,15 @@ public class LibraryService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final ShelfService shelfService;
+    private final ShelfRepository shelfRepository;
 
     @Autowired
-    public LibraryService(LibraryRepository libraryRepository, UserService userService, UserRepository userRepository, @Lazy ShelfService shelfService) {
+    public LibraryService(LibraryRepository libraryRepository, UserService userService, UserRepository userRepository, @Lazy ShelfService shelfService, ShelfRepository shelfRepository) {
         this.libraryRepository = libraryRepository;
         this.userService = userService;
         this.userRepository = userRepository;
         this.shelfService = shelfService;
+        this.shelfRepository = shelfRepository;
     }
 
     public Library getUserLibrary(HttpServletRequest request) {
@@ -94,5 +94,26 @@ public class LibraryService {
 
         Library library = optionalLibrary.get();
         return userService.getUserStats(library.getUser().getId());
+    }
+
+    public boolean isShelfInLibrary(Long libraryId, Long shelfId) {
+        Optional<Shelf> optionalShelf = shelfRepository.findById(shelfId);
+        return optionalShelf.isPresent() && optionalShelf.get().getLibrary().getId() == libraryId;
+    }
+
+    public ShelfData getLibraryShelf(Long libraryId, Long shelfId) {
+        if(!isShelfInLibrary(libraryId, shelfId)) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        return shelfService.getShelfData(shelfId);
+    }
+
+    public Set<BookData> getLibraryShelfBooks(Long libraryId, Long shelfId, Integer page) {
+        if(!isShelfInLibrary(libraryId, shelfId)) {
+            throw new MethodNotAllowedException("You do not have access to this resource.");
+        }
+
+        return shelfService.getShelfBooks(shelfId, page);
     }
 }
