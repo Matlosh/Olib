@@ -1,6 +1,7 @@
 package com.example.backend.services;
 
 import com.example.backend.data.BookData;
+import com.example.backend.data.PublicLibraryData;
 import com.example.backend.data.ShelfData;
 import com.example.backend.exceptions.MethodNotAllowedException;
 import com.example.backend.forms.ShelfEditForm;
@@ -29,18 +30,14 @@ import java.util.stream.Collectors;
 public class ShelfService {
 
     private final ShelfRepository shelfRepository;
-    private final UserService userService;
     private final LibraryService libraryService;
     private final BookRepository bookRepository;
-    private final LibraryRepository libraryRepository;
 
     @Autowired
-    public ShelfService(ShelfRepository shelfRepository, UserService userService, LibraryService libraryService, BookRepository bookRepository, LibraryRepository libraryRepository) {
+    public ShelfService(ShelfRepository shelfRepository, LibraryService libraryService, BookRepository bookRepository) {
         this.shelfRepository = shelfRepository;
-        this.userService = userService;
         this.libraryService = libraryService;
         this.bookRepository = bookRepository;
-        this.libraryRepository = libraryRepository;
     }
 
     public Shelf prepareShelf(ShelfForm shelfForm, HttpServletRequest request, Long shelfId, boolean isDefault) {
@@ -93,14 +90,7 @@ public class ShelfService {
         return getAllShelves(shelves);
     }
 
-    public Set<ShelfData> getAllShelves(Long libraryId) {
-        Optional<Library> optionalLibrary = libraryRepository.findById(libraryId);
-
-        if(optionalLibrary.isEmpty()) {
-            throw new MethodNotAllowedException("You do not have access to this resource.");
-        }
-
-        Library library = optionalLibrary.get();
+    public Set<ShelfData> getAllShelves(Library library) {
         Set<Shelf> shelves = shelfRepository.findByLibrary(library);
         return getAllShelves(shelves);
     }
@@ -156,7 +146,7 @@ public class ShelfService {
         }
 
         Shelf shelf = optionalShelf.get();
-        List<Book> books = bookRepository.findAllByBookShelves(shelf, PageRequest.of(page, 100, Sort.by("id").descending()));
+        List<Book> books = bookRepository.findAllByBookShelves(shelf, PageRequest.of(page, 12, Sort.by("id").descending()));
 
         return books.stream().map(BookData::new).collect(Collectors.toSet());
     }

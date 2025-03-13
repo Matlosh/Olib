@@ -23,7 +23,7 @@ export default function StatsCard({
   icon
 }: StatsCardProps) {
   return (
-    <Card className="w-full max-w-[300px]">
+    <Card className="w-full">
       <CardBody className="flex flex-row items-center gap-4">
         <div>
           <div className={`w-[40px] h-[40px] ${colors[color]} rounded-full flex items-center justify-center`}>

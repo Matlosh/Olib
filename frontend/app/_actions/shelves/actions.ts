@@ -1,4 +1,4 @@
-'use server';
+ 'use server';
 
 import {ApiResponse} from "@/app/_utils/reusable";
 import {apiFetch} from "../reusable";

@@ -43,3 +43,8 @@ type StatsData = {
   averageScore: number,
   scores: ScoreData[]
 };
+
+type PublicLibraryData = {
+  ownerName: string,
+  shelves: ShelfData[]
+};

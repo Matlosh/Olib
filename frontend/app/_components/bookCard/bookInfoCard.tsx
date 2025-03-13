@@ -15,6 +15,7 @@ import { updateBooksContext } from "@/app/_helpers/contexts/books";
 type BookInfoCardProps = {
   book: BookData,
   shelf: ShelfData,
+  viewMode?: boolean,
   onBookRemoveFromShelf?: (book: BookData, shelf: ShelfData) => void,
   onBookDelete?: (book: BookData) => void
 }
@@ -22,6 +23,7 @@ type BookInfoCardProps = {
 export default function BookInfoCard({
   book,
   shelf,
+  viewMode,
   onBookRemoveFromShelf,
   onBookDelete
 }: BookInfoCardProps) {
@@ -109,27 +111,29 @@ export default function BookInfoCard({
           <p>{book.author}</p>
           <p>ISBN: {book.isbn}</p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <Button
-              color="default"
-              onPress={_ => setIsModalOpen(true)}>
-              Edit
-            </Button>
-
-            {!shelf.default && 
+          {!viewMode &&
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
               <Button
-                color="warning"
-                onPress={detachBookFromShelf}>
-                Remove from this shelf
+                color="default"
+                onPress={_ => setIsModalOpen(true)}>
+                Edit
               </Button>
-            }
 
-            <Button
-              color="danger"
-              onPress={_ => setIsAcceptModalOpen(true)}>
-              Delete
-            </Button>
-          </div>
+              {!shelf.default && 
+                <Button
+                  color="warning"
+                  onPress={detachBookFromShelf}>
+                  Remove from this shelf
+                </Button>
+              }
+
+              <Button
+                color="danger"
+                onPress={_ => setIsAcceptModalOpen(true)}>
+                Delete
+              </Button>
+            </div>
+          }
         </div>
       </div>
 

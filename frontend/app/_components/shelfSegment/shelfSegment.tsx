@@ -1,17 +1,19 @@
 'use client';
 
 import {LibraryContext} from "@/app/_providers/libraryProvider";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import BookCard from "../bookCard/bookCard";
-import { Modal, ModalBody, ModalContent, Skeleton, Tooltip, addToast } from "@heroui/react";
+import { Modal, ModalBody, ModalContent, Skeleton, Spinner, Tooltip, addToast } from "@heroui/react";
 import { PiNotePencilBold } from "react-icons/pi";
 import ShelfForm from "../shelfForm/shelfForm";
 import BooksProvider, { BooksContext } from "@/app/_providers/booksProvider";
 import { RiDeleteBinFill } from "react-icons/ri";
 import AcceptRejectModal from "../acceptRejectModal/acceptRejectModal";
 import { updateShelfLibraryContext } from "@/app/_helpers/contexts/library";
-import { deleteShelf } from "@/app/_actions/shelves/actions";
+import { deleteShelf, getShelfBooks } from "@/app/_actions/shelves/actions";
 import { useRouter } from "next/navigation";
+
+const SCROLL_LOAD_PERCENT = 80;
 
 // First page should be already provided to prevent loading at start
 type ShelfSegmentProps = {
@@ -25,21 +27,98 @@ export default function ShelfSegment({
 }: ShelfSegmentProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [shelf, setShelf] = useState<ShelfData | null>(null);
-  const [books, setBooks] = useState(firstPageBooks);
+  const [books, _setBooks] = useState(firstPageBooks);
   const libraryContext = useContext(LibraryContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const router = useRouter();
+  const areNewBooksLoadingRef = useRef(false);
+  const pageRef = useRef(0);
+  const booksRef = useRef<BookData[]>(firstPageBooks);
+  const canLoadMoreRef = useRef(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
-    const shelf = libraryContext.value.find(shelf => shelf.id === Number(id)); 
+    const foundShelf = libraryContext.value.find(s => s.id === Number(id)); 
 
-    if(shelf) {
-      setShelf(shelf);
+    if(foundShelf) {
+      setShelf(foundShelf);
     }
 
     setIsLoaded(true);
   }, [id]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollPercent = ((window.scrollY + window.innerHeight) * 100) / document.body.clientHeight;
+
+      if(scrollPercent >= SCROLL_LOAD_PERCENT) {
+        loadMoreBooks();
+      } 
+    };
+
+    window.addEventListener('scroll', onScroll);
+
+    const intervalId = setInterval(() => {
+      let canContinue = true;
+
+      if(window.innerHeight >= document.body.clientHeight && canLoadMoreRef.current) {
+        loadMoreBooks();
+      } else {
+        canContinue = false;
+      }
+
+      if(!canContinue) {
+        clearInterval(intervalId);
+      }
+    }, 500) as unknown as number;
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [shelf]);
+
+  const setBooks = (books: BookData[]) => {
+    booksRef.current = books;
+    _setBooks(books);
+  };
+
+  const loadMoreBooks = async () => {
+    if(shelf && !areNewBooksLoadingRef.current && canLoadMoreRef.current) {
+      setIsLoadingMore(true);
+      areNewBooksLoadingRef.current = true;
+      let isSucess = false;
+
+      try {
+        const newBooks = await getShelfBooks(shelf.id, pageRef.current + 1);
+
+        if(!('message' in newBooks)) {
+          const allBooks = [...booksRef.current];
+          allBooks.push(...newBooks);
+
+          isSucess = true;
+
+          setBooks(allBooks);
+          pageRef.current++;
+
+          if(newBooks.length === 0) {
+            canLoadMoreRef.current = false;
+          }
+        }
+      } catch(err) {}
+
+      if(!isSucess) {
+        addToast({
+          title: 'Error',
+          description: 'Could not load more books. Please try again.',
+          color: 'danger'
+        });
+      }
+
+      areNewBooksLoadingRef.current = false;
+      setIsLoadingMore(false);
+    }
+  };
 
   const deleteThisShelf = () => {
     (async () => {
@@ -138,6 +217,12 @@ export default function ShelfSegment({
             </>
           }
         </div>
+
+        {isLoadingMore &&
+          <div className="w-full flex items-center justify-center py-4">
+            <Spinner color="primary" /> 
+          </div>
+        }
       </div> 
 
       <Modal

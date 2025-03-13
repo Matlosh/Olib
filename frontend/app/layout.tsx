@@ -35,7 +35,7 @@ export default async function RootLayout({
       >
         <Providers
           me={'nick' in me ? me : undefined}>
-          <div className="w-full h-full min-h-screen flex flex-col items-center justify-center bg-amber-500/5">
+          <div className="w-full h-full min-h-screen flex flex-col items-center justify-center bg-amber-500/15">
             {children}
           </div>
         </Providers>

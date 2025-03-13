@@ -133,8 +133,12 @@ public class UserService {
 
     public StatsData getUserStats(HttpServletRequest request) {
         User user = getUser(request);
-        CalculatedStatsData calculatedStatsData = userRepository.findStats(user.getId());
-        List<ScoreData> scoreDataList = userRepository.findAllScores(user.getId());
+        return getUserStats(user.getId());
+    }
+
+    public StatsData getUserStats(Long userId) {
+        CalculatedStatsData calculatedStatsData = userRepository.findStats(userId);
+        List<ScoreData> scoreDataList = userRepository.findAllScores(userId);
 
         StatsData statsData = new StatsData(calculatedStatsData);
         statsData.setScores(scoreDataList);

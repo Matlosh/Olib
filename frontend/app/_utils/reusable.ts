@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
 export type ApiResponse = {
   success: boolean;
   status: number;
@@ -30,4 +33,8 @@ export function excerptString(text: string, length: number, suffix: string = '..
 
 export function getImageFullUrl(imageUrl: string): string {
   return imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${imageUrl}`;
+}
+ 
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }

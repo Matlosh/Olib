@@ -9,18 +9,16 @@ import clsx from "clsx";
 
 type BookCardProps = {
   book: BookData,
-  shelf: ShelfData
+  shelf: ShelfData,
+  viewMode?: boolean
 };
 
 export default function BookCard({
   book,
-  shelf
+  shelf,
+  viewMode = false
 }: BookCardProps) {
   const [isInfoBoxOpened, setIsInfoBoxOpened] = useState(false);
-
-  useEffect(() => {
-    console.log(book);
-  }, []);
 
   return (
     <>
@@ -31,10 +29,14 @@ export default function BookCard({
           <Image
             isBlurred
             alt={book.name}
+            fallbackSrc={'/images/book-placeholder.webp'}
             src={book.imageUrl.length > 0 ? getImageFullUrl(book.imageUrl) : '/images/book-placeholder.webp'}
             width={150}
             height={200}
             className="object-cover"
+            classNames={{
+              wrapper: 'bg-cover'
+            }}
           />
         </div>
 
@@ -60,6 +62,7 @@ export default function BookCard({
                 <BookInfoCard
                   book={book}
                   shelf={shelf}
+                  viewMode={viewMode}
                   onBookDelete={_ => setIsInfoBoxOpened(false)}
                   /> 
               </ModalBody>

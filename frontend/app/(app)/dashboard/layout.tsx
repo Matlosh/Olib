@@ -26,8 +26,8 @@ export default async function Layout({
         <LibraryProvider shelves={!('message' in shelves) ? shelves : []}>
           <MenuBar />
 
-          <div className="w-full flex flex-col items-center bg-amber-500/5">
-            <div className="w-full px-8 pt-8 pb-[calc(2rem+75px)] md:p-8">
+          <div className="w-full flex flex-col items-center">
+            <div className="w-full px-8 pt-8 pb-[calc(2rem+75px)] md:p-8 flex flex-col gap-8">
               <TopBar />
               {children}
             </div>

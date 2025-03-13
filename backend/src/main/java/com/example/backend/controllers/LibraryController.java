@@ -1,8 +1,6 @@
 package com.example.backend.controllers;
 
-import com.example.backend.data.BookData;
-import com.example.backend.data.LibraryData;
-import com.example.backend.data.ShelfData;
+import com.example.backend.data.*;
 import com.example.backend.forms.LibraryForm;
 import com.example.backend.responses.BaseResponse;
 import com.example.backend.services.LibraryService;
@@ -37,9 +35,16 @@ public class LibraryController {
 
     // Public library fetching equals to fetching all the shelves
     @GetMapping("/libraries/{id}")
-    public Set<ShelfData> getLibrary(@PathVariable Long id) {
+    public PublicLibraryData getLibrary(@PathVariable Long id) {
         libraryService.verifyLibraryPublic(id);
-        return shelfService.getAllShelves(id);
+        return libraryService.getPublicLibrary(id);
+    }
+
+    // Fetches user/public library stats
+    @GetMapping("/libraries/{id}/stats")
+    public StatsData getLibraryStats(@PathVariable Long id) {
+        libraryService.verifyLibraryPublic(id);
+        return libraryService.getLibraryStats(id);
     }
 
     @GetMapping("/libraries/{id}/shelves/{shelfId}/books")

@@ -93,7 +93,7 @@ export default function SearchBooks({
     <>
       {canShowResults &&
         <Card className={clsx("w-full", books.length < 1 && "hidden")}>
-          <CardBody>
+          <CardBody className="overflow-hidden">
             {books.map((book, i) => (
               <React.Fragment key={book.id}>
                 <SearchBook

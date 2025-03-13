@@ -305,6 +305,7 @@ export default function BookForm({
         </Select>
 
         <Checkbox
+          isSelected={fields.isScored.value}
           name="scored"
           onChange={e => fields.isScored.setValue(e.currentTarget.checked)}
           value="true">

@@ -10,30 +10,39 @@ type ShelfCardProps = {
   shelf: ShelfData,
   maxSize?: number,
   // If true, then last element is a link to the shelf's page
-  isLastALink?: boolean 
+  isLastALink?: boolean,
+  viewMode?: boolean
 };
 
 export default function ShelfCard({
   shelf,
   maxSize = 3,
-  isLastALink = false
+  isLastALink = false,
+  viewMode = false
 }: ShelfCardProps) {
-  useEffect(() => {
-    console.log(shelf);
-  }, []);
-
   return (
-    <div className="w-full h-auto flex flex-col justify-end pt-11">
+    <div className="w-full h-auto flex flex-col justify-end">
       <div className="pb-8 w-full flex flex-row justify-center">
         <h1 className="text-2xl font-bold text-center">{shelf.name}</h1>
       </div>
 
-      <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-0">
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
         <div className="hidden md:block w-[100px]"></div>
 
         {shelf.books.slice(0, maxSize).map((book, i) => (
-          <BookCard key={i} book={book} shelf={shelf} />
+          <BookCard
+            key={i}
+            book={book}
+            shelf={shelf}
+            viewMode={viewMode} />
         ))}
+
+        {shelf.booksCount === 0 && shelf.books.length === 0 &&
+          <div className="h-full flex flex-col items-center justify-center gap-4">
+            <h2 className="text-xl font-bold">Nothing here, yet :(</h2>
+            {!viewMode && <Button color="primary">Fill me in!</Button>} 
+          </div> 
+        }
 
         {isLastALink &&
           <div className="w-full md:w-[100px] md:h-[200px] flex items-center justify-center">

@@ -17,11 +17,6 @@ public class User {
     private String login;
     private String password;
 
-    /*
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Shelf> shelves;
-     */
-
     public User() {
 
     }
