@@ -151,7 +151,7 @@ export default function BookForm({
         let isOkay = false;
 
         for(const [key, value] of Object.entries(bookData)) {
-          if(key in ['name', 'author', 'isbn', 'imageUrl']) {
+          if(['name', 'author', 'isbn', 'imageUrl'].includes(key)) {
             if(value.toString().length > 0) {
               isOkay = true;
             }

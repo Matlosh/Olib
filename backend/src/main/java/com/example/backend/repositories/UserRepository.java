@@ -28,10 +28,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             SELECT COUNT(*) FROM (SELECT sb.book_id FROM libraries l INNER JOIN shelves s ON s.library_id = l.id INNER JOIN shelves_books sb ON sb.shelf_id = s.id WHERE l.user_id = :userId GROUP BY sb.book_id)
             ) AS books_count,
             (
-            SELECT COUNT(*) FROM (SELECT s.id FROM libraries l INNER JOIN shelves s ON s.library_id = l.id WHERE l.user_id = 1)
+            SELECT COUNT(*) FROM (SELECT s.id FROM libraries l INNER JOIN shelves s ON s.library_id = l.id WHERE l.user_id = :userId)
             ) AS shelves_count,
             (
-            SELECT CAST(AVG(b.score) AS DOUBLE PRECISION) FROM libraries l INNER JOIN shelves s ON s.library_id = l.id INNER JOIN shelves_books sb ON sb.shelf_id = s.id INNER JOIN books b ON b.id = sb.book_id WHERE l.user_id = :userId AND b.is_scored = true AND sb.shelf_id = (SELECT s.id FROM shelves s INNER JOIN libraries l ON l.id = s.library_id WHERE l.user_id = :userId AND is_default = true)
+            SELECT CAST(COALESCE(AVG(b.score), 0) AS DOUBLE PRECISION) AS count FROM libraries l INNER JOIN shelves s ON s.library_id = l.id INNER JOIN shelves_books sb ON sb.shelf_id = s.id INNER JOIN books b ON b.id = sb.book_id WHERE l.user_id = :userId AND b.is_scored = true AND sb.shelf_id = (SELECT s.id FROM shelves s INNER JOIN libraries l ON l.id = s.library_id WHERE l.user_id = :userId AND is_default = true)
             ) AS average_score
             ;""",
         nativeQuery = true)

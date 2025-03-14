@@ -125,9 +125,7 @@ public class BookService {
         Shelf defaultShelf = userShelves.stream().filter(Shelf::isDefault).findFirst().orElse(null);
 
         if(defaultShelf == null) {
-            ShelfForm shelfForm = new ShelfForm("All books");
-
-            Shelf shelf = shelfService.addShelf(shelfForm, request, true);
+            Shelf shelf = shelfService.addDefaultShelf("All books", library);
             userShelves.add(shelf);
 
             library.setShelves(userShelves);

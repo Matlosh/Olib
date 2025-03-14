@@ -7,14 +7,20 @@ import StatsChart from "@/app/_components/statsChart/statsChart";
 import { PiBookFill, PiBooksFill, PiPercentBold } from "react-icons/pi";
 
 type PublicLibraryProps = {
+  libraryId: string,
   publicLibrary: PublicLibraryData,
   stats: StatsData
 };
 
 export default function PublicLibrary({
+  libraryId,
   publicLibrary,
   stats
 }: PublicLibraryProps) {
+  const constructLibraryShelfUrl = (shelfId: string): string => {
+    return `/libraries/${libraryId}/shelves/${shelfId}`;
+  };
+
   return (
     <div className="w-full flex flex-col items-center gap-4">
       <Tabs color="primary">
@@ -26,6 +32,7 @@ export default function PublicLibrary({
                 shelf={shelf}
                 isLastALink={true}
                 viewMode={true}
+                constructShelfUrl={constructLibraryShelfUrl}
               />
             ))}
           </div>

@@ -8,28 +8,36 @@ import com.example.backend.exceptions.BadRequestException;
 import com.example.backend.exceptions.ForbiddenException;
 import com.example.backend.forms.LoginForm;
 import com.example.backend.forms.RegisterForm;
+import com.example.backend.forms.ShelfForm;
 import com.example.backend.models.Library;
+import com.example.backend.models.Shelf;
 import com.example.backend.models.User;
 import com.example.backend.repositories.LibraryRepository;
 import com.example.backend.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final LibraryRepository libraryRepository;
+    private final ShelfService shelfService;
 
     @Autowired
-    public UserService(UserRepository userRepository, LibraryRepository libraryRepository) {
+    public UserService(UserRepository userRepository, LibraryRepository libraryRepository, @Lazy ShelfService shelfService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.libraryRepository = libraryRepository;
+        this.shelfService = shelfService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Autowired
@@ -87,6 +95,14 @@ public class UserService {
 
         userRepository.save(user);
         libraryRepository.save(library);
+
+        shelfService.addDefaultShelf("All books", library);
+
+        // Shelf defaultShelf =
+//        Set<Shelf> shelves = new HashSet<>();
+//        shelves.add(defaultShelf);
+
+        // library.setShelves(shelves);
     }
 
     public void loginUser(LoginForm form, HttpServletRequest request) {

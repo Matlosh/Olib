@@ -32,7 +32,7 @@ export async function addBook(prevState: any, formData: FormData): Promise<ApiRe
   prepareBody(body, formData);
 
   return await apiFetch(
-    async (json) => json,
+    async (json) => { console.log(json); return json; },
     `${process.env.BACKEND_URL}/books/add`,
     'POST',
     {},

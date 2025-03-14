@@ -1,5 +1,6 @@
 import { getPublicLibraryShelf, getPublicLibraryShelfBooks } from "@/app/_actions/libraries/actions";
 import ShelfSegment from "@/app/_components/shelfSegment/shelfSegment";
+import ReturnHomeButton from "./returnHomeButton";
 
 type PageProps = {
   params: Promise<{ id: string, shelfId: string }>
@@ -12,10 +13,10 @@ export default async function Page({
   const shelf = await getPublicLibraryShelf(Number(id), Number(shelfId));
   const firstPageBooks = await getPublicLibraryShelfBooks(Number(id), Number(shelfId), 0);
 
-  console.log('firstPageBooks', firstPageBooks);
-
   return (
     <div className="w-full flex flex-col items-center justify-center">
+      <ReturnHomeButton libraryId={id} />
+
       {!('message' in firstPageBooks) && !('message' in shelf) ?
         <ShelfSegment
           id={shelfId}

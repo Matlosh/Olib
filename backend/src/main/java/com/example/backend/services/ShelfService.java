@@ -95,7 +95,8 @@ public class ShelfService {
         return getAllShelves(shelves);
     }
 
-    public void deleteShelf(Long id, HttpServletRequest request) {
+    // Checks if shelf exists and user has access to it
+    private Shelf validateShelf(HttpServletRequest request, Long id) {
         if(!shelfRepository.existsById(id)) {
             throw new MethodNotAllowedException("You do not have access to this resource.");
         }
@@ -108,7 +109,21 @@ public class ShelfService {
             throw new MethodNotAllowedException("You do not have access to this resource.");
         }
 
-        Shelf shelfToDelete = shelf.get();
+        return shelf.get();
+    }
+
+    private Shelf validateShelfIsNotDefault(HttpServletRequest request, Long id) {
+        Shelf shelf = validateShelf(request, id);
+
+        if(shelf.isDefault()) {
+            throw new MethodNotAllowedException("You cannot do operations directly on the default shelf.");
+        }
+
+        return shelf;
+    }
+
+    public void deleteShelf(Long id, HttpServletRequest request) {
+        Shelf shelfToDelete = validateShelfIsNotDefault(request, id);
         boolean canContinue = true;
         int pageNumber = 0;
 
@@ -134,6 +149,7 @@ public class ShelfService {
     }
 
     public ShelfData editShelf(ShelfEditForm shelfEditForm, HttpServletRequest request) {
+        validateShelfIsNotDefault(request, shelfEditForm.getId());
         Shelf shelf = prepareShelf(shelfEditForm, request, shelfEditForm.getId(), false);
         return new ShelfData(shelfRepository.save(shelf));
     }
@@ -158,5 +174,14 @@ public class ShelfService {
     public ShelfData getShelfData(Long id) {
         Shelf shelf = getShelf(id);
         return new ShelfData(shelf);
+    }
+
+    public Shelf addDefaultShelf(String name, Library library) {
+        Shelf shelf = new Shelf();
+        shelf.setName(name);
+        shelf.setLibrary(library);
+        shelf.setDefault(true);
+
+        return shelfRepository.save(shelf);
     }
 }

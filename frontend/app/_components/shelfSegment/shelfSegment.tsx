@@ -99,7 +99,6 @@ export default function ShelfSegment({
     if(shelf && !areNewBooksLoadingRef.current && canLoadMoreRef.current) {
       setIsLoadingMore(true);
       areNewBooksLoadingRef.current = true;
-      let isSucess = false;
 
       try {
         let newBooks: ApiResponse | BookData[] = [];
@@ -115,18 +114,20 @@ export default function ShelfSegment({
           const allBooks = [...booksRef.current];
           allBooks.push(...newBooks);
 
-          isSucess = true;
-
           setBooks(allBooks);
           pageRef.current++;
 
           if(newBooks.length === 0) {
             canLoadMoreRef.current = false;
           }
+        } else {
+          addToast({
+            title: 'Error',
+            description: newBooks.message,
+            color: 'danger'
+          });
         }
-      } catch(err) {}
-
-      if(!isSucess) {
+      } catch(err) {
         addToast({
           title: 'Error',
           description: 'Could not load more books. Please try again.',
@@ -151,17 +152,23 @@ export default function ShelfSegment({
 
         if(response.success) {
           isSuccess = true;
+        } else {
+          addToast({
+            title: 'Error',
+            description: response.message,
+            color: 'danger'
+          });
         }
-      } catch(err) {}
-
-      if(isSuccess) {
-        router.push('/dashboard');
-      } else {
+      } catch(err) {
         addToast({
           title: 'Error',
           description: 'Could not delete this shelf. Please try again.',
           color: 'danger'
         });
+      }
+
+      if(isSuccess) {
+        router.push('/dashboard');
       }
     })();
   };
@@ -174,7 +181,7 @@ export default function ShelfSegment({
             {isLoaded && shelf && 
               <>
                 <h1 className="text-2xl font-bold text-center">{shelf.name}</h1>
-                {!viewMode &&
+                {!viewMode && !shelf.default &&
                   <>
                     <Tooltip content="Edit shelf info">
                       <PiNotePencilBold

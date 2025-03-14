@@ -17,6 +17,7 @@ export default async function Page({
     <div className="w-full flex flex-col items-center justify-center">
       {!('message' in publicLibrary) && !('message' in stats) &&
         <PublicLibrary
+          libraryId={id}
           publicLibrary={publicLibrary}
           stats={stats}  
         />}
