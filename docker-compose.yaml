@@ -1,11 +1,12 @@
 services: 
-  spring:
+  olib-spring:
     build: ./backend
     container_name: olib-spring
     ports:
       - "8080:8080"
     depends_on:
-      - olib-database
+      olib-database:
+        condition: service_healthy
     develop:
       watch:
         - action: rebuild
@@ -15,7 +16,9 @@ services:
             - .idea
             - .mvn
             - target
-    network_mode: host
+    volumes:
+      - ./backend:/usr/src/backend
+      - ./backend/target:/usr/src/backend/target
 
   olib-database:
     image: 'postgres:latest'
@@ -28,7 +31,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./database/db-data/:/var/lib/postgresql/data/
-    network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 1s
 
   olib-frontend:
     build: ./frontend
@@ -40,5 +45,4 @@ services:
       - ./frontend/node_modules:/app/node_modules
     depends_on:
       - olib-database
-      - spring
-    network_mode: host
+      - olib-spring
