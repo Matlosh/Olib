@@ -1,25 +1,4 @@
 services: 
-  olib-spring:
-    build: ./backend
-    container_name: olib-spring
-    ports:
-      - "8080:8080"
-    depends_on:
-      olib-database:
-        condition: service_healthy
-    develop:
-      watch:
-        - action: rebuild
-          path: ./backend
-          target: /usr/src/backend
-          ignore:
-            - .idea
-            - .mvn
-            - target
-    volumes:
-      - ./backend:/usr/src/backend
-      - ./backend/target:/usr/src/backend/target
-
   olib-database:
     image: 'postgres:latest'
     ports:
@@ -42,7 +21,17 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - ./frontend/node_modules:/app/node_modules
+      - /app/node_modules
+      - /app/.next
     depends_on:
       - olib-database
-      - olib-spring
+
+  olib-spring:
+    build: ./backend
+    container_name: olib-spring
+    ports:
+      - "8080:8080"
+    depends_on:
+      - olib-database
+    volumes:
+      - ./backend:/usr/src/backend

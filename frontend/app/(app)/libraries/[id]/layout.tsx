@@ -18,7 +18,7 @@ export default async function Layout({
       <div className="w-full max-w-[1600px] px-4 ps:px-0 flex flex-col items-center justify-center gap-4 mb-auto py-8">
         {!('message' in publicLibrary) ?
           <>
-            <h1 className="text-2xl font-bold">{publicLibrary.ownerName}'s library</h1>
+            <h1 className="text-2xl font-bold">{publicLibrary.ownerName}&apos;s library</h1>
             {children}
           </>
           :

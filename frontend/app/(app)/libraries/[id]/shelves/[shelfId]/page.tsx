@@ -27,7 +27,7 @@ export default async function Page({
         />
         :
         <div>
-          <h3 className="text-xl font-bold">Couldn't fetch shelf data. Please try again.</h3>
+          <h3 className="text-xl font-bold">Couldn&apos;t fetch shelf data. Please try again.</h3>
         </div> 
       }
     </div>

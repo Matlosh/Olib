@@ -13,8 +13,15 @@ Olib is a fullstack web application meant to help manage users' books libraries.
 
 ## How to spin this up?
 
-1. Fill frontend/.env and ./.env according to your needs. Most important environmental variables are `POSTGRES_USER` and `POSTGRES_PASSWORD` from ./.env file and `NEXT_PUBLIC_FRONTEND_URL` (it should be set to domain name where the app is being hosted in order to correctly fetch uploaded images urls).
-2. Run the application using `docker compose up`.
+1. Fill frontend/.env and ./.env according to your needs. Most important environmental variables are `POSTGRES_USER` and `POSTGRES_PASSWORD` from ./.env file and `NEXT_PUBLIC_FRONTEND_URL` from frontend/.env file (it should be set to domain name where the app is being hosted in order to correctly fetch uploaded images urls).
+2. Build and run database using `docker compose up --build olib-database`.
+3. Get into the spring service using `docker compose run olib-spring /bin/sh`.
+4. In the spring service run `./mvnw package`.
+5. Exit service and up the spring service using `docker compose up -d olib-spring`. 
+6. Build frontend using `docker compose build olib-frontend`.
+7. Run frontend using `docker compose up olib-frontend`.
+
+Why are we building it step by step instead of just using `docker compose up --build`? I've encountered the problem where during build spring's building script does `./mvnw spring` and it can't really finish, because it tries to connect to the database which is unavailable because docker doesn't allow for network connections during building process. 
 
 ## Cool points 😏
 
